@@ -1,0 +1,15 @@
+{
+  "repository": "https://github.com/soybeanjs/soybean-admin",
+  "branch": "tauri",
+  "commit": "5326761c189d4dea1517fb836266f27710e5a815",
+  "referenceBranch": "example",
+  "referenceCommit": "8be6f9ba68c2e0878a1fd3ebacb5dd4f8d06dae5",
+  "importedAt": "2026-09-07",
+  "directory": "frontend",
+  "changes": [
+    "Excluded upstream GitHub workflows and readmes from the application import",
+    "Retained upstream workspace packages, license, and dependency lockfile",
+    "Use root-owned Prettier and Git hooks; retain original component dependency versions",
+    "Use a dedicated development mode with configurable host and port"
+  ]
+}

@@ -3,13 +3,10 @@ import { root, readEnv, developmentConfig, backendEnvironment } from './env.mjs'
 import path from 'node:path';
 
 try {
-  const config = developmentConfig(readEnv('.env.development.local'));
-  readEnv('backend/.env.development');
-  readEnv('frontend/.env.development.local');
+  const config = developmentConfig(readEnv('development'));
   const desktop = process.argv.includes('--desktop');
   const frontendEnv = {
     ...process.env,
-    DEV_FRONTEND_HOST: config.frontendHost,
     DEV_FRONTEND_PORT: String(config.frontendPort),
     VITE_SERVICE_BASE_URL: config.apiUrl
   };
@@ -17,9 +14,9 @@ try {
     [
       {
         name: 'api',
-        command: `php artisan serve --env=development --host=${config.backendHost} --port=${config.backendPort} --tries=1`,
+        command: `php artisan serve --env=development --host=127.0.0.1 --port=${config.backendPort} --tries=1`,
         cwd: path.join(root, 'backend'),
-        env: { ...backendEnvironment(), APP_URL: config.apiUrl }
+        env: { ...backendEnvironment('development'), APP_URL: config.apiUrl }
       },
       {
         name: desktop ? 'desktop' : 'web',

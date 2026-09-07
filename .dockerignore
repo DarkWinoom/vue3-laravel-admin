@@ -1,0 +1,13 @@
+.git
+.agents*
+**/node_modules
+**/vendor
+**/dist
+**/target
+**/.env*
+!.env.example
+**/.phpunit.cache
+backend/bootstrap/cache/*.php
+backend/storage/**
+!backend/storage/**/.gitignore
+**/*.log

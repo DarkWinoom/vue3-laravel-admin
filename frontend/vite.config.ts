@@ -1,17 +1,21 @@
 import process from 'node:process';
+import { existsSync } from 'node:fs';
 import { URL, fileURLToPath } from 'node:url';
 import { defineConfig, loadEnv } from 'vite';
 import { setupVitePlugins } from './build/plugins';
 import { createViteProxy, getBuildTime } from './build/config';
 
 export default defineConfig(configEnv => {
-  const viteEnv = loadEnv(configEnv.mode, process.cwd()) as unknown as Env.ImportMeta;
+  const rootDir = fileURLToPath(new URL('../', import.meta.url));
+  const envDir = existsSync(`${rootDir}/.env`) ? rootDir : process.cwd();
+  const viteEnv = loadEnv(configEnv.mode, envDir) as unknown as Env.ImportMeta;
 
   const buildTime = getBuildTime();
 
   const enableProxy = configEnv.command === 'serve' && !configEnv.isPreview;
 
   return {
+    envDir,
     base: viteEnv.VITE_BASE_URL,
     resolve: {
       alias: {
@@ -32,7 +36,7 @@ export default defineConfig(configEnv => {
       BUILD_TIME: JSON.stringify(buildTime)
     },
     server: {
-      host: process.env.DEV_FRONTEND_HOST || '127.0.0.1',
+      host: '127.0.0.1',
       port: Number(process.env.DEV_FRONTEND_PORT || 9527),
       open: false,
       strictPort: true,

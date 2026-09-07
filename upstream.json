@@ -10,6 +10,7 @@
     "Excluded upstream GitHub workflows and readmes from the application import",
     "Retained upstream workspace packages, license, and dependency lockfile",
     "Use root-owned Prettier and Git hooks; retain original component dependency versions",
-    "Use a dedicated development mode with configurable host and port"
+    "Use a dedicated development mode with configurable host and port",
+    "Read root environment files for development, testing and production; keep standalone examples"
   ]
 }

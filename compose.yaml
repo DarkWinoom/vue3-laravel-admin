@@ -1,0 +1,58 @@
+name: vue3-laravel-admin-${COMPOSE_ENV:-testing}
+
+services:
+  db:
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE:?Set DB_DATABASE}
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: ${DOCKER_DB_PASSWORD:?Run setup first}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Run setup first}
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: [CMD-SHELL, 'MYSQL_PWD="$$MYSQL_ROOT_PASSWORD" mysql -h 127.0.0.1 -uroot -e "SELECT 1"']
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  api:
+    build:
+      context: .
+      dockerfile: docker/api.Dockerfile
+    restart: unless-stopped
+    env_file: .env.${COMPOSE_ENV:-testing}
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_USERNAME: admin
+      DB_PASSWORD: ${DOCKER_DB_PASSWORD:?Run setup first}
+      APP_KEY: ${APP_KEY:?Run setup first}
+      JWT_SECRET: ${JWT_SECRET:?Run setup first}
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - app-storage:/app/backend/storage
+
+  web:
+    build:
+      context: .
+      dockerfile: docker/web.Dockerfile
+      args:
+        VITE_SERVICE_BASE_URL: ${VITE_SERVICE_BASE_URL:-/proxy-default}
+    restart: unless-stopped
+    ports:
+      - '${DOCKER_HTTP_PORT:-8080}:80'
+    depends_on:
+      - api
+    healthcheck:
+      test: [CMD, wget, -q, --spider, 'http://127.0.0.1/api/v1/health']
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+volumes:
+  mysql-data:
+  app-storage:

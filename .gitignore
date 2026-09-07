@@ -7,13 +7,8 @@ playwright-report/
 test-results/
 *.log
 *.local
-.env
-!frontend/.env
-.env.development
-.env.testing
-!.env.example
-!.env.development.example
-!.env.testing.example
+.env*
+!.env*.example
 backend/bootstrap/cache/*.php
 backend/storage/*.key
 .DS_Store

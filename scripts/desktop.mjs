@@ -2,7 +2,7 @@ import { spawn } from 'node:child_process';
 import path from 'node:path';
 import { root, developmentConfig, readEnv } from './env.mjs';
 
-const config = developmentConfig(readEnv('.env.development.local'));
+const config = developmentConfig(readEnv('development'));
 const child = spawn(
   process.execPath,
   [

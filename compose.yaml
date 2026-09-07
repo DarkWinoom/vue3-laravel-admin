@@ -42,6 +42,7 @@ services:
       dockerfile: docker/web.Dockerfile
       args:
         VITE_SERVICE_BASE_URL: ${VITE_SERVICE_BASE_URL:-/proxy-default}
+        FRONTEND_ENV: ${FRONTEND_ENV:-}
     restart: unless-stopped
     ports:
       - '${DOCKER_HTTP_PORT:-8080}:80'

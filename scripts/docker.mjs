@@ -1,6 +1,6 @@
 import './setup.mjs';
 import { spawnSync } from 'node:child_process';
-import { root } from './env.mjs';
+import { root, frontendEnvironment } from './env.mjs';
 
 const [action = 'up', mode = 'testing'] = process.argv.slice(2);
 if (!['up', 'update', 'down'].includes(action) || !['testing', 'production'].includes(mode)) {
@@ -18,6 +18,7 @@ const commands =
 for (const args of commands) {
   const result = spawnSync('docker', ['compose', '--env-file', `.env.${mode}`, ...args], {
     cwd: root,
+    env: { ...process.env, FRONTEND_ENV: frontendEnvironment(mode) },
     stdio: 'inherit'
   });
   if (result.error) throw result.error;

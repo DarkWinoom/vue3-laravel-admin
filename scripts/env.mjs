@@ -12,6 +12,13 @@ export function readEnv(mode) {
   );
 }
 
+export function frontendEnvironment(mode) {
+  return Object.entries(readEnv(mode))
+    .filter(([key]) => key.startsWith('VITE_'))
+    .map(([key, value]) => `${key}=${JSON.stringify(value)}`)
+    .join('\n');
+}
+
 export function developmentConfig(values) {
   const frontendPort = Number(values.DEV_FRONTEND_PORT || 9527);
   const backendPort = Number(values.DEV_BACKEND_PORT || 8000);

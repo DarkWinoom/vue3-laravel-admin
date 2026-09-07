@@ -1,0 +1,10 @@
+{
+  "recommendations": [
+    "Vue.volar",
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "bmewburn.vscode-intelephense-client",
+    "rust-lang.rust-analyzer"
+  ],
+  "unwantedRecommendations": ["octref.vetur"]
+}

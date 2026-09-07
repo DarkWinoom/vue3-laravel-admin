@@ -1,0 +1,15 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    { "label": "Dev: Web + API", "type": "shell", "command": "pnpm dev", "isBackground": true, "problemMatcher": [] },
+    {
+      "label": "Dev: Desktop + API",
+      "type": "shell",
+      "command": "pnpm dev:desktop",
+      "isBackground": true,
+      "problemMatcher": []
+    },
+    { "label": "Check", "type": "shell", "command": "pnpm check", "problemMatcher": [] },
+    { "label": "Test", "type": "shell", "command": "pnpm test", "problemMatcher": [] }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "[php]": { "editor.defaultFormatter": "bmewburn.vscode-intelephense-client" },
+  "[rust]": { "editor.defaultFormatter": "rust-lang.rust-analyzer" },
+  "eslint.workingDirectories": ["./frontend"],
+  "eslint.validate": ["javascript", "typescript", "vue"],
+  "typescript.tsdk": "frontend/node_modules/typescript/lib",
+  "intelephense.environment.phpVersion": "8.4.0",
+  "intelephense.environment.includePaths": ["backend/vendor"],
+  "intelephense.files.exclude": ["**/.git/**", "**/node_modules/**", "**/.agents-docs/**"],
+  "rust-analyzer.linkedProjects": ["frontend/src-tauri/Cargo.toml"],
+  "files.watcherExclude": {
+    "**/.agents-docs/**": true,
+    "**/backend/vendor/**": true,
+    "**/frontend/src-tauri/target/**": true
+  }
+}

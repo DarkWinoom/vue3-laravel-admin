@@ -1,0 +1,15 @@
+.agents-docs/
+.agents-*/
+node_modules/
+frontend/node_modules/
+backend/vendor/
+backend/storage/
+backend/bootstrap/cache/
+frontend/dist/
+frontend/src-tauri/target/
+**/pnpm-lock.yaml
+backend/composer.lock
+frontend/src/typings/components.d.ts
+frontend/src/typings/elegant-router.d.ts
+frontend/src/router/elegant/
+*.php

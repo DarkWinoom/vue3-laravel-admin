@@ -1,0 +1,38 @@
+{
+  "name": "vue3-laravel-admin",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "packageManager": "pnpm@11.5.0",
+  "engines": {
+    "node": ">=22.19.0",
+    "pnpm": ">=11.0.0"
+  },
+  "scripts": {
+    "doctor": "node scripts/doctor.mjs",
+    "setup": "node scripts/setup.mjs",
+    "dev": "node scripts/dev.mjs",
+    "dev:desktop": "node scripts/dev.mjs --desktop",
+    "typecheck": "pnpm --dir frontend typecheck",
+    "lint": "pnpm --dir frontend lint:check",
+    "fmt": "prettier --write .",
+    "format:check": "prettier --check .",
+    "check": "pnpm typecheck && pnpm lint && pnpm format:check && pnpm check:backend",
+    "check:backend": "node scripts/backend.mjs check",
+    "test": "node --test scripts/tests/*.test.mjs && node scripts/backend.mjs test",
+    "test:mysql": "node scripts/backend.mjs test:mysql",
+    "build:web": "pnpm --dir frontend build",
+    "build:desktop": "pnpm --dir frontend build:tauri",
+    "db:migrate": "node scripts/backend.mjs migrate",
+    "prepare": "simple-git-hooks"
+  },
+  "devDependencies": {
+    "concurrently": "9.2.1",
+    "prettier": "3.6.2",
+    "simple-git-hooks": "2.13.1"
+  },
+  "simple-git-hooks": {
+    "pre-commit": "pnpm check",
+    "commit-msg": "node scripts/verify-commit.mjs"
+  }
+}

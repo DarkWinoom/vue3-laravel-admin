@@ -2,6 +2,8 @@
 
 Vue3 + Laravel 13 + MySQL 8，界面基于 soybean-admin Tauri 分支。
 
+日常开发使用 `pnpm dev`；Docker 仅用于特定功能验证、部署测试或实际运行。
+
 ## 目录
 
 ```text

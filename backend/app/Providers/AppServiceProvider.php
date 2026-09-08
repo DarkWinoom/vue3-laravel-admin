@@ -2,7 +2,17 @@
 
 namespace App\Providers;
 
+use App\Models\User;
+use App\Modules\Access\Application\AccessQuery;
+use App\Modules\Access\Infrastructure\AccessProjector;
+use App\Modules\Access\Presentation\CreateAdminCommand;
+use App\Modules\Access\Presentation\ReplayAccessCommand;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
+use Spatie\EventSourcing\Projectionist;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -19,6 +29,12 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        app(Projectionist::class)->addProjector(AccessProjector::class);
+        Gate::before(fn (User $user, string $ability) => app(AccessQuery::class)->allows($user, $ability));
+        RateLimiter::for('login', fn (Request $request) => [
+            Limit::perMinute(5)->by(strtolower((string) $request->input('email')).'|'.$request->ip()),
+            Limit::perMinute(30)->by($request->ip()),
+        ]);
+        $this->commands([CreateAdminCommand::class, ReplayAccessCommand::class]);
     }
 }

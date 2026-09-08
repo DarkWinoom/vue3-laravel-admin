@@ -6,7 +6,7 @@ const action = process.argv[2];
 const commands = {
   check: [
     ['vendor/bin/pint', '--test'],
-    ['vendor/bin/phpstan', 'analyse', '--no-progress']
+    ['vendor/bin/phpstan', 'analyse', '--no-progress', '--memory-limit=512M']
   ],
   test: [['vendor/bin/phpunit']],
   'test:mysql': [['vendor/bin/phpunit']],

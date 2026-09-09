@@ -18,7 +18,7 @@ function loginOrRegister() {
   toLogin();
 }
 
-type DropdownKey = 'logout';
+type DropdownKey = 'logout' | 'profile';
 
 type DropdownOption =
   | {
@@ -33,6 +33,7 @@ type DropdownOption =
 
 const options = computed(() => {
   const opts: DropdownOption[] = [
+    { label: '个人中心', key: 'profile', icon: SvgIconVNode({ icon: 'ph:user-circle', fontSize: 18 }) },
     {
       label: $t('common.logout'),
       key: 'logout',
@@ -50,7 +51,7 @@ function logout() {
     positiveText: $t('common.confirm'),
     negativeText: $t('common.cancel'),
     onPositiveClick: () => {
-      authStore.resetStore();
+      authStore.logout();
     }
   });
 }

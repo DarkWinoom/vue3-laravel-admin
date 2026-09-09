@@ -18,7 +18,7 @@
     "format:check": "prettier --check .",
     "check": "pnpm typecheck && pnpm lint && pnpm format:check && pnpm check:backend",
     "check:backend": "node scripts/backend.mjs check",
-    "test": "node --test scripts/tests/*.test.mjs && node scripts/backend.mjs test",
+    "test": "node --test scripts/tests/*.test.mjs frontend/tests/*.test.ts && node scripts/backend.mjs test",
     "test:mysql": "node scripts/backend.mjs test:mysql",
     "build:web": "pnpm --dir frontend build",
     "build:desktop": "pnpm --dir frontend build:tauri",

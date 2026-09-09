@@ -1,20 +1,12 @@
+import { createStaticRoutes } from '@/router/routes';
 import { request } from '../request';
 
-/** get constant routes */
-export function fetchGetConstantRoutes() {
-  return request<Api.Route.MenuRoute[]>({ url: '/route/getConstantRoutes' });
+export async function fetchGetConstantRoutes() {
+  return { data: createStaticRoutes().constantRoutes, error: null };
 }
-
-/** get user routes */
 export function fetchGetUserRoutes() {
-  return request<Api.Route.UserRoute>({ url: '/route/getUserRoutes' });
+  return request<Api.Route.UserRoute>({ url: '/navigation/routes' });
 }
-
-/**
- * whether the route is exist
- *
- * @param routeName route name
- */
-export function fetchIsRouteExist(routeName: string) {
-  return request<boolean>({ url: '/route/isRouteExist', params: { routeName } });
+export async function fetchIsRouteExist(routeName: string) {
+  return { data: ['home', 'profile', 'users', 'roles', 'permissions', 'menus'].includes(routeName) };
 }

@@ -220,6 +220,11 @@ const local: App.I18n.Schema = {
     }
   },
   route: {
+    users: '用户管理',
+    roles: '角色管理',
+    permissions: '权限管理',
+    menus: '菜单管理',
+    profile: '个人中心',
     login: '登录',
     403: '无权限',
     404: '页面不存在',

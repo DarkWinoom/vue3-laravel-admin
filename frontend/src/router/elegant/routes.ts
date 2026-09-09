@@ -74,5 +74,50 @@ export const generatedRoutes: GeneratedRoute[] = [
       constant: true,
       hideInMenu: true
     }
+  },
+  {
+    name: 'menus',
+    path: '/menus',
+    component: 'layout.base$view.menus',
+    meta: {
+      title: 'menus',
+      i18nKey: 'route.menus'
+    }
+  },
+  {
+    name: 'permissions',
+    path: '/permissions',
+    component: 'layout.base$view.permissions',
+    meta: {
+      title: 'permissions',
+      i18nKey: 'route.permissions'
+    }
+  },
+  {
+    name: 'profile',
+    path: '/profile',
+    component: 'layout.base$view.profile',
+    meta: {
+      title: 'profile',
+      i18nKey: 'route.profile'
+    }
+  },
+  {
+    name: 'roles',
+    path: '/roles',
+    component: 'layout.base$view.roles',
+    meta: {
+      title: 'roles',
+      i18nKey: 'route.roles'
+    }
+  },
+  {
+    name: 'users',
+    path: '/users',
+    component: 'layout.base$view.users',
+    meta: {
+      title: 'users',
+      i18nKey: 'route.users'
+    }
   }
 ];

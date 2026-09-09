@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 final class AuditController
 {
@@ -18,8 +19,11 @@ final class AuditController
             'page' => 'integer|min:1', 'pageSize' => 'integer|min:1|max:100',
             'actor' => 'nullable|string|max:100', 'action' => 'nullable|string|max:100',
             'result' => 'nullable|in:success,failure', 'requestId' => 'nullable|uuid',
-            'dateFrom' => 'nullable|date_format:Y-m-d', 'dateTo' => 'nullable|date_format:Y-m-d|after_or_equal:dateFrom',
+            'dateFrom' => 'nullable|date_format:Y-m-d', 'dateTo' => 'nullable|date_format:Y-m-d',
         ]);
+        if (! empty($filters['dateFrom']) && ! empty($filters['dateTo']) && $filters['dateTo'] < $filters['dateFrom']) {
+            throw ValidationException::withMessages(['dateTo' => '结束日期不能早于开始日期']);
+        }
         $page = DB::table('audit_logs')
             ->when($filters['actor'] ?? null, fn ($q, $value) => $q->where('actor_name', 'like', "%$value%"))
             ->when($filters['action'] ?? null, fn ($q, $value) => $q->where('action', 'like', "%$value%"))

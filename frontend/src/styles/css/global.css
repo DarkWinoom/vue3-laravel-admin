@@ -13,3 +13,8 @@ html {
   overflow-x: hidden;
   color: rgb(var(--base-text-color));
 }
+
+/* Naive UI word counters use .85em independently of its font-size theme tokens. */
+body .n-input .n-input-word-count {
+  font-size: max(14px, 0.85em);
+}

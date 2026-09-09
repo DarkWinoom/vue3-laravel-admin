@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { jsonClone } from '@sa/utils';
+import { localIconNames } from '@/plugins/iconify';
 import { useNaiveForm } from '@/hooks/common/form';
 import type { Option, RecordItem } from './types';
 const props = defineProps<{
@@ -33,6 +34,7 @@ const type = computed({
     if (value === 'group') model.value.parent_id = null;
   }
 });
+const icons = localIconNames.map(value => ({ label: value, value }));
 const pages = [
   { label: '用户管理', value: 'users' },
   { label: '角色管理', value: 'roles' },
@@ -75,7 +77,7 @@ async function submit() {
   >
     <NScrollbar class="max-h-[65vh] pr-20px">
       <NForm ref="formRef" :model="model" :rules="rules" label-placement="left" :label-width="100">
-        <NGrid responsive="screen" item-responsive :x-gap="20">
+        <NGrid responsive="screen" item-responsive :x-gap="8">
           <NFormItemGi span="24 m:12" label="菜单类型">
             <NRadioGroup v-model:value="type">
               <NRadio value="group" label="目录" />
@@ -101,9 +103,7 @@ async function submit() {
             <NInputNumber v-model:value="model.sort" :min="0" :max="10000" class="w-full" />
           </NFormItemGi>
           <NFormItemGi span="24 m:12" label="图标">
-            <NInput v-model:value="model.icon" placeholder="请输入图标名称">
-              <template #suffix><SvgIcon :icon="model.icon" class="text-icon" /></template>
-            </NInput>
+            <NSelect v-model:value="model.icon" :options="icons" filterable placeholder="请选择本地图标" />
           </NFormItemGi>
           <NFormItemGi span="24 m:12" label="菜单状态">
             <NRadioGroup v-model:value="model.enabled">

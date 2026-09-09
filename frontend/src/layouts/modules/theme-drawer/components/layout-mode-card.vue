@@ -93,7 +93,7 @@ function handleChangeMode(mode: UnionKey.ThemeLayoutMode) {
         </template>
         {{ $t(`theme.layout.layoutMode.${key}_detail`) }}
       </IconTooltip>
-      <p class="mt-8px text-12px">{{ $t(themeLayoutModeRecord[key]) }}</p>
+      <p class="mt-8px text-14px">{{ $t(themeLayoutModeRecord[key]) }}</p>
     </div>
   </div>
 </template>

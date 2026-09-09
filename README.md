@@ -4,9 +4,9 @@ Vue3 + Laravel 13 + MySQL 8，界面基于 soybean-admin Tauri 分支。
 
 日常开发使用 `pnpm dev`；Docker 仅用于特定功能验证、部署测试或实际运行。
 
-已实现邮箱登录、刷新与退出、个人资料和改密、用户/角色/权限/菜单管理、动态菜单与按钮权限。授权变更使用事件溯源及同步投影，后端逐请求检查当前权限。
+已实现邮箱登录、刷新与退出、个人资料和改密、用户/角色/权限/菜单管理、动态菜单与按钮权限、操作审计、真实统计仪表盘和本地 Swagger API 文档。授权变更使用事件溯源及同步投影，后端逐请求检查当前权限。
 
-界面固定中文。管理页面的查询卡片、表格工具栏与抽屉/弹窗采用官方 example 分支样式；系统管理菜单包含用户、角色、权限与菜单四个子页，个人中心从右上角账户菜单进入。
+界面固定中文。管理页面的查询卡片、表格工具栏与抽屉/弹窗采用官方 example 分支样式；系统管理菜单包含用户、角色、权限、菜单、操作审计和 API 文档六个子页，个人中心从右上角账户菜单进入。
 
 底部版权默认隐藏，组件保留。可在“主题配置 → 布局 → 显示底部”随时恢复；默认值由 `frontend/src/theme/settings.ts` 的 `themeSettings.footer.visible` 控制。个人中心使用满高单栏卡片，表单内容独立滚动，底部操作区保持固定位置。
 
@@ -99,13 +99,33 @@ Web 访问令牌只保存在内存，刷新凭据为 HttpOnly Cookie，刷新和
 
 ## API 与模块
 
-接口前缀 `/api/v1`。成功响应为 `{code: "0000", msg, data}`；列表 `data` 为 `{records, total, page, pageSize, version}`，每页最多 100 条。失败保留 HTTP 401/403/404/409/422/429，并返回业务错误码和字段错误。管理写请求附列表返回的 `version`，遇到 409 时刷新数据后重试。
+接口前缀 `/api/v1`。成功响应为 `{code: "0000", msg, data}`；管理列表 `data` 为 `{records, total, page, pageSize, version}`，审计列表没有 `version`，每页最多 100 条。失败保留 HTTP 401/403/404/409/422/429，并返回业务错误码和字段错误。管理写请求附列表返回的 `version`，遇到 409 时刷新数据后重试。
 
-`backend/app/Modules/Identity` 管理用户与会话，`Access` 管理授权命令、事件和投影，`Navigation` 管理菜单。用户及菜单写入通过应用层 Commands；角色、权限和用户角色分配必须经过 Access 命令入口，不能直接改授权读表。`access:replay` 只重建授权投影，不重建用户资料或菜单。
+`backend/app/Modules/Identity` 管理用户与会话，`Access` 管理授权命令、事件和投影，`Navigation` 管理菜单，`Audit` 保存操作记录，`Dashboard` 提供授权统计，`Documentation` 补齐自动生成的 API 契约。用户及菜单写入通过应用层 Commands；角色、权限和用户角色分配必须经过 Access 命令入口，不能直接改授权读表。`access:replay` 只重建授权投影，不重建用户资料或菜单。
 
 菜单支持顶级页面或分组下的页面。顶级名称不能含下划线；子菜单名称使用 `分组名_页面名`，路径使用 `/分组路径/子路径`。可选页面组件为当前已交付的管理页面。内置权限标识如 `users.read`、`roles.update`，用于后端授权及前端按钮可见性。
 
-默认管理路径为 `/manage/user`、`/manage/role`、`/manage/permission` 和 `/manage/menu`。菜单列表按顶级目录分页，并以 `children` 返回子菜单。已有默认菜单通过迁移归入“系统管理”，保留原有自定义标题、状态和权限。
+默认管理路径为 `/manage/user`、`/manage/role`、`/manage/permission`、`/manage/menu`、`/manage/audit` 和 `/manage/docs`。菜单列表按顶级目录分页，并以 `children` 返回子菜单。已有默认菜单通过迁移归入“系统管理”，保留原有自定义标题、状态和权限。
+
+## 审计、统计和 API 文档
+
+审计只读，需 `audit.read` 权限，可按操作人、操作标识、结果、请求编号和 UTC 日期筛选。成功记录与业务写入同事务，失败记录在回滚后保存。记录只保留允许的业务字段，不保存邮箱、密码、令牌、Cookie 或请求正文；权限投影重放不会重做审计。
+
+首页从 `/api/v1/dashboard` 获取真实计数，每项资源需对应的 `*.read` 权限；七日操作趋势和最近操作需 `audit.read`。无权查看的统计不会返回给浏览器。
+
+“系统管理 → API 文档”需 `docs.read` 权限。文档页面和 Swagger 资源在本地打包，调试自动使用当前会话；写入调试会修改真实数据。后端 `/api/v1/openapi` 也检查权限。`API_DOCS_ENABLED` 可在对应模式 env 中显式设置；开发/测试默认开启，生产默认关闭。关闭后隐藏默认文档菜单并拒绝文档请求，Scramble 的默认公开文档路由不注册。
+
+| 命令                  | 用途                                                                                       |
+| --------------------- | ------------------------------------------------------------------------------------------ |
+| `pnpm api:generate`   | 更新 `backend/openapi.json` 与 `frontend/src/service/api/openapi.d.ts`，接口变更后一起提交 |
+| `pnpm api:check`      | 检查生成契约是否过期                                                                       |
+| `pnpm icons:generate` | 从本地 Iconify 数据集打包代码使用的动态图标                                                |
+
+PHP 测试通过 JSON Schema 校验器核对真实 HTTP 响应。路由及输入校验由 Scramble 推导，事务回调中的响应模型由 `Documentation/Application/ApiDocument.php` 补充。
+
+字体使用系统字体栈，Naive UI 小字号、表格、弹窗、分页、提示、图表和 Swagger 内容统一至少 14px。动态图标使用 `@iconify/vue/offline`；菜单编辑器从已打包的本地图标中选择，历史未知图标显示本地占位，不请求 CDN。新增代码中的图标后运行 `pnpm icons:generate` 并提交图标资源。
+
+新增依赖：`swagger-ui-dist`（Apache-2.0，用于文档界面）、`openapi-typescript`（MIT，用于契约类型）、`@redocly/ajv`（MIT，用于响应校验）、`@iconify/utils`（MIT，用于图标打包）及 Swagger 类型声明（MIT）。图标集的作者和许可保留在 `frontend/src/assets/icons/management.json`，上游许可证继续保留。
 
 ## 注意
 

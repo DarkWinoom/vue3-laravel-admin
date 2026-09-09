@@ -28,7 +28,7 @@ const results = [
       <NCollapse>
         <NCollapseItem title="搜索" name="audit-search">
           <NForm label-placement="left" :label-width="90" @submit.prevent="getDataByPage(1)">
-            <NGrid responsive="screen" item-responsive :x-gap="24">
+            <NGrid responsive="self" item-responsive :x-gap="8">
               <NFormItemGi span="24 s:12 m:8" label="操作人">
                 <NInput v-model:value="filters.actor" placeholder="请输入操作人" clearable />
               </NFormItemGi>

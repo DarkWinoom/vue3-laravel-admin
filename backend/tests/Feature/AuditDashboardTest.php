@@ -53,6 +53,8 @@ final class AuditDashboardTest extends TestCase
         $this->assertSame([], $page['records'][0]['details']);
         $this->assertStringNotContainsString('never-store', json_encode($page));
         $this->getJson('/api/v1/audit-logs?dateFrom=2099-01-01&dateTo=2099-01-02')->assertJsonPath('data.total', 0);
+        $this->getJson('/api/v1/audit-logs?dateTo=2000-01-01')->assertOk()->assertJsonPath('data.total', 0);
+        $this->getJson('/api/v1/audit-logs?dateFrom=2099-01-02&dateTo=2099-01-01')->assertUnprocessable();
         $this->getJson('/api/v1/audit-logs?pageSize=101')->assertUnprocessable();
     }
 

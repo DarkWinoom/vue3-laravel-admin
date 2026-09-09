@@ -12,7 +12,7 @@ interface Props {
   loading?: boolean;
 }
 
-withDefaults(defineProps<Props>(), { showActions: true });
+withDefaults(defineProps<Props>(), { showActions: true, itemAlign: 'center' });
 
 interface Emits {
   (e: 'add'): void;

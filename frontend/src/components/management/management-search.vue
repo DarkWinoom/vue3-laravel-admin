@@ -14,7 +14,7 @@ const statuses = [
     <NCollapse>
       <NCollapseItem title="搜索" name="management-search">
         <NForm :model="model" label-placement="left" :label-width="80" @submit.prevent="emit('search')">
-          <NGrid responsive="screen" item-responsive>
+          <NGrid responsive="self" item-responsive>
             <template v-if="resource === 'users'">
               <NFormItemGi span="24 s:12 m:6" label="用户名" class="pr-24px">
                 <NInput v-model:value="model.name" placeholder="请输入用户名" clearable />

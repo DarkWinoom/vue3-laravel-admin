@@ -57,6 +57,7 @@ async function submit() {
 
 <template>
   <NDrawer
+    class="max-w-full"
     :show="visible"
     display-directive="show"
     :width="360"

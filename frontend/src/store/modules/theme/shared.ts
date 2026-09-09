@@ -250,6 +250,10 @@ export function getNaiveTheme(
   const theme: GlobalThemeOverrides = {
     common: {
       ...getNaiveThemeColors(colors, settings.recommendColor),
+      fontSize: '14px',
+      fontSizeMini: '14px',
+      fontSizeTiny: '14px',
+      fontSizeSmall: '14px',
       borderRadius: `${settings.themeRadius}px`
     },
     LoadingBar: {

@@ -28,9 +28,14 @@ const cards = {
   <div class="flex-col-stretch gap-16px">
     <NCard :bordered="false" class="card-wrapper">
       <div class="flex flex-wrap items-center justify-between gap-16px">
-        <div>
-          <h2 class="text-20px">欢迎，{{ auth.userInfo.userName }}</h2>
-          <p class="mt-8px text-14px text-base-text/65">系统概览 · 仅展示当前账户有权查看的数据</p>
+        <div class="min-w-0 flex items-center gap-12px">
+          <div class="size-48px flex-center shrink-0 rd-8px bg-primary/10 text-26px text-primary">
+            <SvgIcon icon="mdi:monitor-dashboard" />
+          </div>
+          <div class="min-w-0">
+            <h2 class="truncate text-16px leading-22px">欢迎，{{ auth.userInfo.userName }}</h2>
+            <p class="mt-2px text-14px text-base-text/65 leading-20px">当前账户的授权数据概览</p>
+          </div>
         </div>
         <NButton :loading="loading" @click="refresh">
           <template #icon><icon-ic-round-refresh /></template>

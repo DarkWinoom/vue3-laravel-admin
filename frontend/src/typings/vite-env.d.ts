@@ -94,14 +94,6 @@ declare namespace Env {
     readonly VITE_MENU_ICON: string;
     /** Whether to build with sourcemap */
     readonly VITE_SOURCE_MAP?: CommonType.YesOrNo;
-    /**
-     * Iconify api provider url
-     *
-     * If the project is deployed in intranet, you can set the api provider url to the local iconify server
-     *
-     * @link https://docs.iconify.design/api/providers.html
-     */
-    readonly VITE_ICONIFY_URL?: string;
     /** Used to differentiate storage across different domains */
     readonly VITE_STORAGE_PREFIX?: string;
     /** Whether to automatically detect updates after configuring application packaging */

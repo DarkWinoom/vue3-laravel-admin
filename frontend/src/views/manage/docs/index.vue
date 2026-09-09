@@ -82,6 +82,10 @@ onBeforeUnmount(() => {
     color: rgb(var(--base-text-color));
     font-family: inherit;
 
+    .expand-operation svg,
+    .opblock-control-arrow svg {
+      fill: rgb(var(--base-text-color));
+    }
     .wrapper {
       padding: 0;
     }

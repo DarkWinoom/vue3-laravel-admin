@@ -11,6 +11,7 @@ export default defineConfig({
   theme: {
     ...themeVars,
     fontSize: {
+      xs: '0.875rem',
       'icon-xs': '0.875rem',
       'icon-small': '1rem',
       icon: '1.125rem',

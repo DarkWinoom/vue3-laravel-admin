@@ -130,7 +130,7 @@ const applyPreset = (preset: ThemePreset): void => {
         </NButton>
       </div>
 
-      <p class="line-clamp-2 mb-3 text-xs text-gray-500 leading-4">{{ getPresetDesc(preset) }}</p>
+      <p class="line-clamp-2 mb-3 text-14px text-gray-500 leading-4">{{ getPresetDesc(preset) }}</p>
 
       <div class="flex items-center justify-between">
         <div class="flex gap-1">

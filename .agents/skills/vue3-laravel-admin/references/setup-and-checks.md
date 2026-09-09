@@ -53,4 +53,6 @@ docker compose --env-file .env.testing exec api php artisan admin:create admin@e
 
 `pnpm test` 包含 Node 测试及 SQLite；`pnpm test:mysql` 会重建专用 `_testing` 库，绝不能指向开发/生产库。需要浏览器测试时运行 `pnpm test:seed` 后 `pnpm dev:test`，默认 9531/8011。专用测试账户 `browser-admin@example.test`、`browser-viewer@example.test`，密码均为 `Browser-test-password!`；它们不属于正式部署。MySQL 回归后重新 seed 以恢复验收账户。
 
+`pnpm api:generate` / `pnpm api:check` 使用临时 SQLite 迁移库导出契约，无需外部 MySQL；数据库行为仍由 `pnpm test:mysql` 验证。
+
 错误/越权测试应证明当前功能被拒绝，而不是仅断言页面上没有按钮。只标记真正执行成功的检查；依赖、网络或目标平台不足时明确记录影响，不添加空测试来替代验证。

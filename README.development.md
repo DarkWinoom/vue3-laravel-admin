@@ -123,6 +123,8 @@ Web 访问令牌只保存在内存，刷新凭据为 HttpOnly Cookie，刷新和
 | `pnpm api:check`      | 检查生成契约是否过期                                                                       |
 | `pnpm icons:generate` | 从本地 Iconify 数据集打包代码使用的动态图标                                                |
 
+契约导出会在临时 SQLite 中执行迁移，不需要外部 MySQL，也不读写业务数据库；生成结果仍由独立 MySQL 集成测试验证。
+
 PHP 测试通过 JSON Schema 校验器核对真实 HTTP 响应。路由及输入校验由 Scramble 推导，事务回调中的响应模型由 `Documentation/Application/ApiDocument.php` 补充。
 
 字体使用系统字体栈，Naive UI 小字号、表格、弹窗、分页、提示、图表和 Swagger 内容统一至少 14px。动态图标使用 `@iconify/vue/offline`；菜单编辑器从已打包的本地图标中选择，历史未知图标显示本地占位，不请求 CDN。新增代码中的图标后运行 `pnpm icons:generate` 并提交图标资源。

@@ -38,6 +38,7 @@ export function useDesktopUpdate(
     } catch (error) {
       if (disposed) return;
       console.error('Desktop update check failed: ' + String(error));
+      if (import.meta.env?.MODE === 'testing') document.documentElement.dataset.desktopUpdateError = String(error);
       state.value = 'error';
       message.value = '更新检查失败，请检查网络后重试。';
     }

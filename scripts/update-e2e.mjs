@@ -170,6 +170,14 @@ try {
   await attach();
   await showUpdates();
   await evaluate(
+    "window.__updaterProbe=null;window.__TAURI_INTERNALS__.invoke('plugin:updater|check',{timeout:15000}).then(value=>{window.__updaterProbe={version:value?.version || null};if(value)window.__TAURI_INTERNALS__.invoke('plugin:resources|close',{rid:value.rid});}).catch(error=>window.__updaterProbe={error:String(error)});return true;"
+  );
+  await wait(() => evaluate('return window.__updaterProbe'), 'Native updater probe did not finish');
+  console.log('Native updater probe:', await evaluate('return window.__updaterProbe'));
+  await evaluate(
+    "window.__updateConsole=[];const original=console.error;console.error=(...args)=>{window.__updateConsole.push(args.map(String).join(' '));original.apply(console,args)};return true;"
+  );
+  await evaluate(
     "const original=window.__TAURI_INTERNALS__.invoke;window.__updateFailures=[];window.__TAURI_INTERNALS__.invoke=function(...args){return original.apply(this,args).catch(error=>{if(String(args[0]).startsWith('plugin:updater'))window.__updateFailures.push(String(error));throw error})};return true;"
   );
   await click('检查更新');
@@ -222,6 +230,11 @@ try {
     console.error(
       'Updater diagnostic:',
       await evaluate('return window.__updateFailures || []').catch(() => 'WebView exited')
+    );
+  if (session)
+    console.error(
+      'Updater JS errors:',
+      await evaluate('return window.__updateConsole || []').catch(() => 'WebView exited')
     );
   console.error('Updater asset requests:', downloads);
   if (session)

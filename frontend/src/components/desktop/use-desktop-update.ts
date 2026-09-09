@@ -35,8 +35,9 @@ export function useDesktopUpdate(
       release.value = update;
       state.value = update ? 'available' : 'idle';
       message.value = update ? '发现可用更新。' : '当前已是最新版本。';
-    } catch {
+    } catch (error) {
       if (disposed) return;
+      console.error('Desktop update check failed: ' + String(error));
       state.value = 'error';
       message.value = '更新检查失败，请检查网络后重试。';
     }

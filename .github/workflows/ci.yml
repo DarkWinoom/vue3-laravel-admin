@@ -75,6 +75,9 @@ jobs:
       - name: Native UI test
         if: runner.os != 'Linux'
         run: node scripts/native-e2e.mjs
+      - name: Signed update and installer test (Windows)
+        if: runner.os == 'Windows'
+        run: node scripts/update-e2e.mjs
       - name: Production packages
         run: node scripts/desktop.mjs build --bundles ${{ matrix.bundles }}
       - run: node scripts/collect-artifacts.mjs

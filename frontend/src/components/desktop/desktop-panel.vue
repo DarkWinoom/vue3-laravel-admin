@@ -8,6 +8,7 @@ const auth = useAuthStore();
 const address = ref(desktopApiOrigin.value);
 const failed = ref('');
 const saving = ref(false);
+const updateBusy = ref(false);
 watch(desktopPanelVisible, visible => {
   if (visible) {
     address.value = desktopApiOrigin.value;
@@ -37,9 +38,11 @@ async function connect() {
     title="桌面设置"
     class="w-560px max-w-[calc(100vw-32px)]"
     :mask-closable="false"
+    :closable="!updateBusy"
+    :close-on-esc="!updateBusy"
   >
     <NTabs type="line" animated>
-      <NTabPane name="connection" tab="服务连接">
+      <NTabPane name="connection" tab="服务连接" :disabled="updateBusy">
         <NForm @submit.prevent="connect">
           <NFormItem label="服务地址">
             <NInput v-model:value="address" placeholder="https://admin.example.com" />
@@ -49,7 +52,7 @@ async function connect() {
           <NButton type="primary" attr-type="submit" :loading="saving">保存连接</NButton>
         </NForm>
       </NTabPane>
-      <NTabPane name="update" tab="版本与更新"><DesktopUpdate /></NTabPane>
+      <NTabPane name="update" tab="版本与更新"><DesktopUpdate @busy="updateBusy = $event" /></NTabPane>
     </NTabs>
   </NModal>
 </template>

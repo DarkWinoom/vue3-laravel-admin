@@ -1,6 +1,10 @@
 <script setup lang="ts">
+import { watch } from 'vue';
 import { useDesktopUpdate } from './use-desktop-update';
-const { currentVersion, state, release, progress, message, checkUpdate, installUpdate, restart } = useDesktopUpdate();
+const { currentVersion, state, busy, release, progress, message, checkUpdate, installUpdate, restart } =
+  useDesktopUpdate();
+const emit = defineEmits<{ busy: [value: boolean] }>();
+watch(busy, value => emit('busy', value), { immediate: true });
 const enabled = import.meta.env.VITE_DESKTOP_UPDATER_ENABLED === 'Y';
 </script>
 

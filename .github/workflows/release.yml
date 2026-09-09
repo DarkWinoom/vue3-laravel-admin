@@ -10,11 +10,26 @@ on:
         type: string
 permissions:
   contents: read
+  actions: read
 concurrency:
   group: release-${{ github.ref }}-${{ inputs.tag }}
   cancel-in-progress: false
 jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.tag || github.ref }}
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24.19.0
+      - run: node scripts/release-source.mjs
+        env:
+          GH_TOKEN: ${{ github.token }}
   build:
+    needs: verify
+    environment: desktop-release
     if: github.event_name == 'push' || github.ref == 'refs/heads/main'
     strategy:
       fail-fast: false
@@ -33,6 +48,8 @@ jobs:
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.tag || github.ref }}
       - uses: ./.github/actions/setup
       - name: Validate release
         run: node scripts/release-check.mjs
@@ -49,12 +66,30 @@ jobs:
       - run: pnpm test
       - run: pnpm api:check
       - run: pnpm check:desktop
+      - name: Optional Windows system signing
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: ./scripts/windows-signing.ps1
+        env:
+          WINDOWS_CERTIFICATE: ${{ secrets.WINDOWS_CERTIFICATE }}
+          WINDOWS_CERTIFICATE_PASSWORD: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
+          WINDOWS_TIMESTAMP_URL: ${{ vars.WINDOWS_TIMESTAMP_URL }}
       - name: Signed updater packages
         run: node scripts/desktop.mjs build --release --bundles ${{ matrix.bundles }}
         env:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+          APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
           DESKTOP_UPDATER_PUBLIC_KEY: ${{ secrets.DESKTOP_UPDATER_PUBLIC_KEY }}
+      - name: Remove imported Windows certificate
+        if: always() && runner.os == 'Windows'
+        shell: pwsh
+        run: ./scripts/windows-signing.ps1 -Cleanup
       - run: node scripts/collect-artifacts.mjs --signed
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
@@ -69,6 +104,8 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.tag || github.ref }}
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 24.19.0

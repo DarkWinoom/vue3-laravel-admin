@@ -17,18 +17,29 @@ const apiOverride = apiAt >= 0 ? args.splice(apiAt, 2)[1] : process.env.DESKTOP_
 const e2e = args.includes('desktop-e2e');
 if (e2e && (mode !== 'testing' || !args.includes('--debug')))
   throw new Error('desktop-e2e requires testing mode and --debug');
+const app = appSettings();
+if (e2e && process.env.DESKTOP_E2E_VERSION) app.version = process.env.DESKTOP_E2E_VERSION;
 const { config, env } = desktopConfig({
   mode,
   release,
   values: { ...readEnv(mode), ...(apiOverride ? { DESKTOP_API_URL: apiOverride } : {}) },
   signing: process.env,
-  ...appSettings()
+  ...app
 });
 if (e2e) {
   config.identifier += '.e2e';
   config.productName += ' Test';
   config.app.windows[0].title = config.productName;
   env.VITE_APP_TITLE = config.productName;
+  if (process.env.DESKTOP_E2E_UPDATER_ENDPOINT) {
+    const endpoint = new URL(process.env.DESKTOP_E2E_UPDATER_ENDPOINT);
+    if (endpoint.protocol !== 'http:' || endpoint.hostname !== '127.0.0.1' || !config.plugins?.updater)
+      throw new Error('Native update fixture requires a loopback endpoint and test public key');
+    config.plugins.updater.endpoints = [endpoint.href];
+    config.plugins.updater.dangerousInsecureTransportProtocol = true;
+    if (process.env.DESKTOP_E2E_INSTALL_DIRECTORY)
+      config.plugins.updater.windows.installerArgs = ['/D=' + process.env.DESKTOP_E2E_INSTALL_DIRECTORY];
+  }
 }
 if (e2e)
   config.app.security.capabilities = [

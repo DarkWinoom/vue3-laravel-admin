@@ -28,6 +28,14 @@ export function desktopConfig({ mode = 'production', release = false, values = {
   const pubkey = signing.DESKTOP_UPDATER_PUBLIC_KEY?.trim() || '';
   if (release && (!signing.TAURI_SIGNING_PRIVATE_KEY || !pubkey))
     throw new Error('签名发布需要 TAURI_SIGNING_PRIVATE_KEY 和 DESKTOP_UPDATER_PUBLIC_KEY');
+  const windowsSigning = signing.DESKTOP_WINDOWS_CERT_THUMBPRINT
+    ? {
+        certificateThumbprint: signing.DESKTOP_WINDOWS_CERT_THUMBPRINT,
+        digestAlgorithm: 'sha256',
+        timestampUrl: signing.DESKTOP_WINDOWS_TIMESTAMP_URL
+      }
+    : undefined;
+  if (windowsSigning && !windowsSigning.timestampUrl) throw new Error('Windows signing requires a timestamp URL');
   const endpoint = new URL(settings.updateEndpoint);
   if (endpoint.protocol !== 'https:' || endpoint.username || endpoint.password)
     throw new Error('Updater endpoint must use HTTPS');
@@ -71,7 +79,7 @@ export function desktopConfig({ mode = 'production', release = false, values = {
         ],
         security: { csp, devCsp: csp }
       },
-      bundle: { createUpdaterArtifacts: release },
+      bundle: { createUpdaterArtifacts: release, ...(windowsSigning ? { windows: windowsSigning } : {}) },
       ...(pubkey
         ? { plugins: { updater: { pubkey, endpoints: [endpoint.href], windows: { installMode: 'passive' } } } }
         : {})

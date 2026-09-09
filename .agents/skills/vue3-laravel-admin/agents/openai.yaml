@@ -1,0 +1,4 @@
+interface:
+  display_name: 'Vue3 Laravel Admin 定制开发'
+  short_description: '以本项目为地基定制管理界面，并同步菜单、权限、接口与验证'
+  default_prompt: '使用 $vue3-laravel-admin 基于当前项目实现我描述的功能；没有项目时先获取本项目作为地基。'

@@ -4,7 +4,7 @@
 
 Vue3 + Laravel 13 + MySQL 8，界面基于 soybean-admin Tauri 分支。
 
-日常开发使用 `pnpm dev`；Docker 用于部署、验证和实际运行。当前完整交付以 Web/API 为主，已有 Tauri 联调入口；三平台正式安装包、签名更新与发布 CI 尚未交付。
+日常开发使用 `pnpm dev`；Docker 用于部署、验证和实际运行。Web/API 与桌面共用业务界面，已接入三平台 CI、原生业务测试及草稿发布工作流；实际构建和验收结果以 Actions 与 Release 记录为准。
 
 已实现邮箱登录、刷新与退出、个人资料和改密、用户/角色/权限/菜单管理、动态菜单与按钮权限、操作审计、真实统计仪表盘和本地 Swagger API 文档。授权变更使用事件溯源及同步投影，后端逐请求检查当前权限。
 
@@ -95,7 +95,7 @@ pnpm dev             # 同时启动前端 9527 与 API 8000；Ctrl+C 一起停�
 
 本地连接使用 `DB_HOST/PORT/DATABASE/USERNAME/PASSWORD`；Docker 内数据库地址和账号由 Compose 设置，使用 `DOCKER_DB_PASSWORD` 和 `MYSQL_ROOT_PASSWORD`。`DOCKER_HTTP_PORT` 控制容器对外端口，`APP_URL` 设置访问地址。`VITE_*` 属于前端公开配置，不能放数据库密码或服务端密钥，修改后需重新构建。
 
-认证配置位于对应模式的 env：`JWT_TTL` 为访问令牌分钟数（默认 15），`REFRESH_TTL` 为刷新会话分钟数（默认 10080），`JWT_ISSUER` 为固定签发方。`AUTH_ALLOWED_ORIGINS` 为逗号分隔的浏览器/桌面来源白名单；本地默认包含 Vite 地址，生产默认仅 `APP_URL`，额外桌面来源需显式添加。生产 Web 使用 HTTPS，并通过同站点 API 代理发送 Cookie。
+认证配置位于对应模式的 env：`JWT_TTL` 为访问令牌分钟数（默认 15），`REFRESH_TTL` 为刷新会话分钟数（默认 10080），`JWT_ISSUER` 为固定签发方。`AUTH_ALLOWED_ORIGINS` 为逗号分隔的浏览器/桌面来源白名单；本地默认包含 Vite 地址，生产默认包含 `APP_URL` 和 Tauri 桌面来源，自定义白名单时需一并保留实际桌面来源。生产 Web 使用 HTTPS，并通过同站点 API 代理发送 Cookie。
 
 Web 访问令牌只保存在内存，刷新凭据为 HttpOnly Cookie，刷新和退出校验 CSRF。桌面凭据仅驻留内存，重开应用需重新登录。同页面并发请求合并刷新；切换登录身份后，旧请求结果会被丢弃，旧写请求不会用新账户的令牌重试；已消费的刷新凭据被再次使用会撤销整条会话。修改密码、禁用账户及退出会使相关会话失效。
 
@@ -206,6 +206,7 @@ npx skills remove vue3-laravel-admin --agent codex --global
 - `references/setup-and-checks.md`：本地/Docker 启动及按改动选择的检查矩阵。
 - `references/frontend.md`：组件入口、菜单接线、样式和交互约定。
 - `references/backend.md`：模块、事务、权限、审计和 API 契约。
+- `references/desktop-and-release.md`：按需使用的桌面、CI、发布及上游同步边界。
 - `agents/openai.yaml`：Codex 显示名称和默认提示，不绑定额外插件。
 - `LICENSE`：随独立安装副本保留的 MIT 授权。
 
@@ -220,3 +221,71 @@ npx skills remove vue3-laravel-admin --agent codex --global
 5. 完成相关检查和权限/页面验收。完整约束与按需阅读入口见仓库内 skill。
 
 不要手工修改生成的路由文件或类型。新增菜单只修改初始化器无法升级已有部署，应提供新的增量迁移。需要不同于当前静态两层菜单、单租户或会话设计的行为时，先明确产品变化及其影响，再同步实现与 skill。
+
+## 桌面客户端与构建
+
+桌面端连接同一套 Laravel API，不内置 PHP、MySQL 或业务数据。正式构建首次启动显示“桌面设置”，填写不含路径的 HTTPS 服务地址，例如 `https://admin.example.com`；不要添加 `/api/v1`。登录页或账户菜单中的“连接与更新”可修改地址，更换服务会退出当前账号。只保存服务地址，关闭重开后需要重新登录。
+
+应用名称和标识集中在 `desktop.json`；应用版本以根 `package.json.version` 为准，由构建脚本传给 Tauri 和界面。现有图标来自保留许可的 Soybean 基座，替换品牌图标时使用 Tauri 图标生成工具更新 `frontend/src-tauri/icons`。派生应用应修改名称、标识和更新地址，避免与原应用共享安装身份或更新源。
+
+本地需要 `rust-toolchain.toml` 固定的 Rust 1.97.1（含 rustfmt/clippy）以及 [Tauri 系统依赖](https://v2.tauri.app/start/prerequisites/)。Windows 需要 MSVC C++ 构建工具和 WebView2，Linux 使用 WebKitGTK 4.1。CI 使用 Node 24.19.0、pnpm 11.5.0、PHP 8.4 和锁文件安装。
+
+```sh
+pnpm dev:desktop                  # 开发 API，默认 8000
+pnpm dev:desktop:test             # 测试 API，默认 8011，先执行 test:seed
+pnpm build:desktop                # 当前操作系统的生产包，首次配置服务
+node scripts/desktop.mjs build --api https://admin.example.com
+pnpm check:desktop                # Web 构建、Rust 格式及 Clippy
+```
+
+生产模式不接受 HTTP API；开发/测试只额外允许本机 HTTP。后端生产默认允许 APP_URL 和 `tauri://localhost`、`https://tauri.localhost`、`http://tauri.localhost`；若设置了 `AUTH_ALLOWED_ORIGINS`，必须在自定义列表中包含实际桌面来源。CSP 只允许本地脚本、字体及图标，连接允许 HTTPS 以支持首次配置服务；capabilities 仅提供更新、重启和 HTTPS 外链所需能力。
+
+CI 目标为 Windows x86_64（NSIS exe）、macOS Apple Silicon（dmg）和 Linux x86_64（AppImage/deb），其他架构未列入此矩阵。下载与检查记录在 [Actions](https://github.com/DarkWinoom/vue3-laravel-admin/actions/workflows/ci.yml)；草稿 Release 仅仓库有权限的验收者可见，普通用户应使用已发布的版本。
+
+## 自动化检查与依赖同步
+
+`ci.yml` 对 main、codex 分支、PR 和手动运行执行检查。质量任务覆盖类型、lint、格式、Pint、PHPStan、Node/SQLite/MySQL、OpenAPI 漂移、浏览器 E2E 和 Web 构建；三个原生任务各自编译、运行 WebView 业务与签名升级测试，生成生产包并验证安装、启动和卸载。PR 不读取签名私钥。失败时保留浏览器报告或原生截图，成功产物附带校验和及依赖许可记录。
+
+```sh
+pnpm --dir frontend exec playwright install chromium
+pnpm test:e2e
+# 原生测试会使用专用 SQLite 临时库及 8021/4445 端口
+node scripts/desktop.mjs build --mode testing --api http://127.0.0.1:8021 --debug --no-bundle --features desktop-e2e
+pnpm test:desktop
+pnpm upstream:check
+```
+
+Linux 原生测试用 `xvfb-run -a node scripts/native-e2e.mjs`。测试应用使用独立的 `.e2e` 标识及 Test 名称；WebDriver 仅为测试 feature，Rust 拒绝把它编译进 release profile。不要分发这些调试二进制文件。
+
+Dependabot 分别为根 pnpm、前端 pnpm、Composer、Cargo 和 Actions 创建更新 PR。上游工作流每周及手动检测 `upstream.json` 中的 tauri/example SHA；存在变化时保存二进制差异补丁，并创建仅含候选 SHA 的草稿 PR。它不应用补丁，也不推进基线。先审查差异，在自己的分支选择性移植并处理冲突，通过项目检查后再更新基线；关闭的同 SHA 提案不会重复创建。
+
+## 签名更新与草稿发布
+
+更新使用 [Tauri updater](https://v2.tauri.app/plugin/updater/)，入口为“连接与更新 → 版本与更新”。界面显示版本说明、下载进度、失败重试和重启。Windows 安装器启动后会退出应用；macOS/Linux 安装完成后点击重启。没有配置公钥的普通构建关闭在线更新，仍可安装新版客户端。
+
+维护者为自己的应用生成并安全备份更新密钥；不能把私钥、密码或真实 env 提交 Git。独立安装 skill 的使用者无需配置这些发布凭据。
+
+```sh
+pnpm --dir frontend exec tauri signer generate -w /secure/location/admin-updater.key
+```
+
+在 GitHub Actions Secrets 配置 `TAURI_SIGNING_PRIVATE_KEY`（私钥内容）、`DESKTOP_UPDATER_PUBLIC_KEY`（公钥内容），以及有密码时的 `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`。本机构建从进程环境读取这些变量，不从根 env 文件读取签名私钥；`node scripts/desktop.mjs build --release` 缺少必要密钥时在构建前失败。公钥会进入客户端，私钥只参与构建。保留原私钥才能向已安装的应用继续签发更新。
+
+发布工作流检查版本，构建完整三平台签名产物，生成 `latest.json`、SHA-256 校验文件和许可清单，只创建或更新**草稿** Release。任一平台失败不会执行草稿聚合，已公开的 Release 不允许覆盖。发布前核对三平台安装、服务连接、业务及签名升级；验收后由维护者公开草稿。默认更新地址指向仓库最新已公开 Release 的 `latest.json`，因此未公开草稿不会向普通客户端推送更新。
+
+系统代码签名与上述更新签名是两套独立机制。当前验收构建未配置 Windows 商业签名证书和 Apple Developer 签名/公证凭据，不能称为已完成系统签名或公证。公开发行前按 [Windows 签名](https://v2.tauri.app/distribute/sign/windows/) 与 [macOS 签名](https://v2.tauri.app/distribute/sign/macos/) 设置相应凭据和渠道要求。
+
+桌面常见问题：连接失败先检查服务的 HTTPS 证书、health 接口和来源白名单；版本检查失败核对更新地址、公钥与 Release 可见性；安装更新失败保留当前可用版本，核对签名及平台文件，不能关闭签名校验绕过。桌面版本回退通过安装经确认的旧安装包完成；服务端迁移仍按部署章节备份和恢复，客户端回退不会自动回退数据库。
+
+发布环境 `desktop-release` 限制 main 分支和 v\* 标签。升级根 `package.json.version` 后提交并推送 main，等待该提交的完整 CI 成功，再创建并推送同名版本标签：
+
+```sh
+git tag v0.1.0
+git push origin v0.1.0
+```
+
+示例版本需替换为实际版本；不覆盖已存在的发布 tag。手动运行 release.yml 时也需要先有 tag，工作流检出该 tag，而非把正在变化的 main 当作版本源码。
+
+可选系统签名：Windows 在 Secrets 提供 Base64 PFX `WINDOWS_CERTIFICATE` 和 `WINDOWS_CERTIFICATE_PASSWORD`，仓库变量 `WINDOWS_TIMESTAMP_URL` 填签名服务时间戳地址。工作流仅在 Windows runner 导入证书并在结束时移除。Apple 通过 `APPLE_CERTIFICATE`、`APPLE_CERTIFICATE_PASSWORD`、`APPLE_SIGNING_IDENTITY`、`APPLE_ID`、`APPLE_PASSWORD`、`APPLE_TEAM_ID` 注入签名和公证凭据。不提供这些凭据时生成未做系统签名/公证的验收包，Tauri 更新签名仍独立执行。
+
+签名更新回归命令为 `node scripts/update-e2e.mjs`，使用临时测试密钥和 Test 应用安装目录，在 Windows NSIS、macOS app 和 Linux AppImage 中覆盖下载失败、篡改拒绝、0.1.0 → 0.1.1 安装及重启，结束后卸载并清理临时文件。Linux 同样在 xvfb-run 下执行。CI 不使用生产签名密钥运行此测试。

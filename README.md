@@ -56,6 +56,12 @@ node scripts/docker.mjs update
 
 已克隆仓库的用户也可让 AI 直接读取仓库内的 skill。其他助手、本地安装、更新与移除方法见 [Skill 安装和使用规范](README.development.md#skill-安装和使用规范)。Skill 本身不运行业务系统，也不会代替 AI 编程助手或部署环境。
 
+## 桌面使用
+
+桌面客户端与网页版连接同一套服务。安装后首次打开，填写自己的 HTTPS 服务地址，再使用已有账号登录。“连接与更新”可更换服务和检查新版；重开应用需要重新登录。
+
+桌面版支持 Windows、macOS 和 Linux，可用安装包以 [Releases](https://github.com/DarkWinoom/vue3-laravel-admin/releases) 中公开的版本为准。构建及维护细节见 [桌面开发说明](README.development.md#桌面客户端与构建)。
+
 ## 可选扩展阅读
 
 [开发与部署详解](README.development.md)面向希望了解代码和命令的使用者，包含本地开发、环境配置、数据库与测试、模块扩展、技能维护以及部署排障。

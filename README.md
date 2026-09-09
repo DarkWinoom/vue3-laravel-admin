@@ -61,7 +61,18 @@ pnpm dev             # 同时启动前端 9527 与 API 8000；Ctrl+C 一起停�
 
 首次管理员初始化同时创建内置权限和管理菜单。后续账户从用户管理创建，角色分配需要 `roles.update` 权限；内置 `admin` 角色受保护，禁止禁用、删除或移除最后一位可用管理员。
 
-测试联调先运行 `pnpm test:seed`，再运行 `pnpm dev:test`。仅在独立 `_testing` 数据库生成 `browser-admin@example.test` 和 `browser-viewer@example.test`，两者的测试密码为 `Browser-test-password!`；后者仅可读取用户列表。这些固定测试账户不会由普通迁移或生产部署创建。
+### 登录账号
+
+**普通开发环境（`pnpm dev`，默认 9527）没有默认账号。** 首次先执行 `pnpm db:migrate`，再执行 `pnpm admin:create <你的邮箱>`，按提示设置密码，随后使用该邮箱和密码登录。
+
+**测试环境（`pnpm dev:test`，默认 9531）** 先执行 `pnpm test:seed`，再使用以下账号：
+
+| 权限     | 登录邮箱                      | 密码                     |
+| -------- | ----------------------------- | ------------------------ |
+| 管理员   | `browser-admin@example.test`  | `Browser-test-password!` |
+| 只读用户 | `browser-viewer@example.test` | `Browser-test-password!` |
+
+这些账号仅存在于独立 `_testing` 库，不适用于普通开发或 Docker 数据库。运行 `pnpm test:mysql` 会清空测试账号，之后重新执行 `pnpm test:seed` 即可恢复。
 
 ## 配置
 

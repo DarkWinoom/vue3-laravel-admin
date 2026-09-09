@@ -30,7 +30,9 @@ const tree = computed(() => {
     users: '用户管理',
     roles: '角色管理',
     permissions: '权限管理',
-    menus: '菜单管理'
+    menus: '菜单管理',
+    audit: '操作审计',
+    docs: 'API 文档'
   };
   const verbs: Record<string, string> = { read: '查看', create: '新增', update: '编辑', delete: '删除' };
   const groups = new Map<string, { key: string; label: string; children: { key: number; label: string }[] }>();

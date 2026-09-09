@@ -2,7 +2,7 @@ import { reactive } from 'vue';
 import { localStg } from '@/utils/storage';
 
 export const isDesktop = '__TAURI_INTERNALS__' in window;
-export const sessionState = reactive({ token: '', refreshToken: '', csrf: '', revision: 0 });
+export const sessionState = reactive({ token: '', refreshToken: '', csrf: '', revision: 0, identityRevision: 0 });
 
 export function csrfToken() {
   return isDesktop
@@ -14,13 +14,15 @@ export function csrfToken() {
           ?.slice(11) ?? ''
       );
 }
-export function setSession(tokens: Api.Auth.LoginToken) {
+export function setSession(tokens: Api.Auth.LoginToken, newIdentity = true) {
+  if (newIdentity) sessionState.identityRevision += 1;
   sessionState.token = tokens.token;
   sessionState.refreshToken = isDesktop ? (tokens.refreshToken ?? '') : '';
   sessionState.csrf = tokens.csrfToken;
   sessionState.revision += 1;
 }
-export function clearSession() {
+export function clearSession(endIdentity = true) {
+  if (endIdentity) sessionState.identityRevision += 1;
   sessionState.token = '';
   sessionState.refreshToken = '';
   sessionState.csrf = '';

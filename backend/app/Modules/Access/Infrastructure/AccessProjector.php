@@ -15,13 +15,13 @@ final class AccessProjector extends Projector
         $data = $event->data;
         switch ($event->action) {
             case 'permission.saved':
-                DB::table('permissions')->updateOrInsert(['id' => $data['id']], ['name' => $data['name'], 'guard_name' => 'web', 'created_at' => $event->createdAt(), 'updated_at' => $event->createdAt()]);
+                DB::table('permissions')->updateOrInsert(['id' => $data['id']], ['name' => $data['name'], 'guard_name' => 'web', 'created_at' => DB::table('permissions')->where('id', $data['id'])->value('created_at') ?? $event->createdAt(), 'updated_at' => $event->createdAt()]);
                 break;
             case 'permission.deleted':
                 DB::table('permissions')->where('id', $data['id'])->delete();
                 break;
             case 'role.saved':
-                DB::table('roles')->updateOrInsert(['id' => $data['id']], ['name' => $data['name'], 'guard_name' => 'web', 'created_at' => $event->createdAt(), 'updated_at' => $event->createdAt()]);
+                DB::table('roles')->updateOrInsert(['id' => $data['id']], ['name' => $data['name'], 'guard_name' => 'web', 'created_at' => DB::table('roles')->where('id', $data['id'])->value('created_at') ?? $event->createdAt(), 'updated_at' => $event->createdAt()]);
                 DB::table('role_has_permissions')->where('role_id', $data['id'])->delete();
                 foreach ($data['permissionIds'] as $permissionId) {
                     DB::table('role_has_permissions')->insert(['role_id' => $data['id'], 'permission_id' => $permissionId]);

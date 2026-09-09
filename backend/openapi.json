@@ -686,17 +686,37 @@
             "post": {
                 "operationId": "auth.refresh",
                 "tags": ["Auth"],
+                "parameters": [
+                    {
+                        "name": "X-CSRF-Token",
+                        "in": "header",
+                        "description": "Web 客户端必填，使用登录响应中的 csrfToken；desktop 无需此字段。",
+                        "schema": { "type": "string" }
+                    }
+                ],
                 "requestBody": {
                     "required": true,
                     "content": {
                         "application/json": {
                             "schema": {
-                                "type": "object",
-                                "properties": {
-                                    "client": { "type": "string", "enum": ["web", "desktop"] },
-                                    "refreshToken": { "type": ["string", "null"], "maxLength": 100 }
-                                },
-                                "required": ["client"]
+                                "oneOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "client": { "type": "string", "const": "web" },
+                                            "refreshToken": { "type": ["string", "null"], "maxLength": 100 }
+                                        },
+                                        "required": ["client"]
+                                    },
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "client": { "type": "string", "const": "desktop" },
+                                            "refreshToken": { "type": "string", "minLength": 1, "maxLength": 100 }
+                                        },
+                                        "required": ["client", "refreshToken"]
+                                    }
+                                ]
                             }
                         }
                     }
@@ -807,6 +827,14 @@
             "post": {
                 "operationId": "auth.logout",
                 "tags": ["Auth"],
+                "parameters": [
+                    {
+                        "name": "X-CSRF-Token",
+                        "in": "header",
+                        "description": "Web 客户端必填，使用登录响应中的 csrfToken；desktop 无需此字段。",
+                        "schema": { "type": "string" }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "成功",

@@ -71,7 +71,11 @@ final class DocumentationTest extends TestCase
         $this->assertArrayHasKey('/v1/roles', $spec['paths']);
         $temporary = storage_path('framework/contract-test-'.Str::uuid().'.json');
         try {
-            file_put_contents($temporary, json_encode(['spec' => $spec, 'cases' => $cases], JSON_THROW_ON_ERROR));
+            $requestCases = [];
+            foreach ([[['client' => 'web'], true], [['client' => 'desktop', 'refreshToken' => 'test-token'], true], [['client' => 'desktop'], false], [['client' => 'desktop', 'refreshToken' => null], false]] as [$body, $valid]) {
+                $requestCases[] = ['path' => '/v1/auth/refresh', 'method' => 'post', 'body' => $body, 'valid' => $valid];
+            }
+            file_put_contents($temporary, json_encode(['spec' => $spec, 'cases' => $cases, 'requestCases' => $requestCases], JSON_THROW_ON_ERROR));
             $process = new Process(['node', base_path('../scripts/validate-api-contract.mjs'), $temporary], base_path('..'));
             $process->run();
             $this->assertTrue($process->isSuccessful(), $process->getErrorOutput().$process->getOutput());

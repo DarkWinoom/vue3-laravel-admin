@@ -25,7 +25,7 @@ final class AuthController
 
     public function refresh(Request $request, SessionService $sessions): JsonResponse
     {
-        $request->validate(['client' => 'required|in:web,desktop', 'refreshToken' => 'nullable|string|max:100']);
+        $request->validate(['client' => 'required|in:web,desktop', 'refreshToken' => 'required_if:client,desktop|nullable|string|max:100']);
         $client = $request->string('client')->toString();
         $credential = $client === 'web' ? $request->cookie('refresh_token', '') : $request->input('refreshToken', '');
 

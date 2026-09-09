@@ -5,6 +5,7 @@ import { useBoolean } from '@sa/hooks';
 import type { CustomRoute, ElegantConstRoute, LastLevelRouteKey, RouteKey, RouteMap } from '@elegant-router/types';
 import { router } from '@/router';
 import { fetchGetUserRoutes, fetchIsRouteExist } from '@/service/api';
+import { sessionState } from '@/service/request/session';
 import { SetupStoreId } from '@/enum';
 import { createStaticRoutes, getAuthVueRoutes } from '@/router/routes';
 import { ROOT_ROUTE } from '@/router/routes/builtin';
@@ -198,7 +199,9 @@ export const useRouteStore = defineStore(SetupStoreId.Route, () => {
 
   /** Init dynamic auth route */
   async function initDynamicAuthRoute() {
+    const identityRevision = sessionState.identityRevision;
     const { data, error } = await fetchGetUserRoutes();
+    if (identityRevision !== sessionState.identityRevision) return;
 
     if (!error) {
       const { routes, home } = data;

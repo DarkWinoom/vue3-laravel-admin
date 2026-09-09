@@ -53,7 +53,10 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
       if (error) return;
       setSession(data);
       initialized.value = true;
-      if (!(await getUserInfo())) {
+      const identityRevision = sessionState.identityRevision;
+      const hasIdentity = await getUserInfo();
+      if (identityRevision !== sessionState.identityRevision) return;
+      if (!hasIdentity) {
         await resetStore();
         return;
       }

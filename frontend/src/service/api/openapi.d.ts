@@ -1475,17 +1475,26 @@ export interface operations {
   'auth.refresh': {
     parameters: {
       query?: never;
-      header?: never;
+      header?: {
+        /** @description Web 客户端必填，使用登录响应中的 csrfToken；desktop 无需此字段。 */
+        'X-CSRF-Token'?: string;
+      };
       path?: never;
       cookie?: never;
     };
     requestBody: {
       content: {
-        'application/json': {
-          /** @enum {string} */
-          client: 'web' | 'desktop';
-          refreshToken?: string | null;
-        };
+        'application/json':
+          | {
+              /** @constant */
+              client: 'web';
+              refreshToken?: string | null;
+            }
+          | {
+              /** @constant */
+              client: 'desktop';
+              refreshToken: string;
+            };
       };
     };
     responses: {
@@ -1659,7 +1668,10 @@ export interface operations {
   'auth.logout': {
     parameters: {
       query?: never;
-      header?: never;
+      header?: {
+        /** @description Web 客户端必填，使用登录响应中的 csrfToken；desktop 无需此字段。 */
+        'X-CSRF-Token'?: string;
+      };
       path?: never;
       cookie?: never;
     };

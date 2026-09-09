@@ -125,6 +125,18 @@ final class ApiDocument
                 $uri = '/'.trim($path->path, '/');
                 $public = in_array($uri, ['/v1/health', '/v1/auth/login', '/v1/auth/refresh'], true);
                 $operation->security = [new SecurityRequirement($public ? [] : ['bearerAuth' => []])];
+                if ($uri === '/v1/auth/refresh') {
+                    $operation->requestBodyObject->content['application/json'] = self::schema(['oneOf' => [
+                        self::object(['client' => ['type' => 'string', 'const' => 'web'], 'refreshToken' => ['type' => ['string', 'null'], 'maxLength' => 100]], ['client']),
+                        self::object(['client' => ['type' => 'string', 'const' => 'desktop'], 'refreshToken' => ['type' => 'string', 'minLength' => 1, 'maxLength' => 100]]),
+                    ]]);
+                }
+                if (in_array($uri, ['/v1/auth/refresh', '/v1/auth/logout'], true)) {
+                    $csrf = Parameter::make('X-CSRF-Token', 'header');
+                    $csrf->description = 'Web 客户端必填，使用登录响应中的 csrfToken；desktop 无需此字段。';
+                    $csrf->schema = self::schema(['type' => 'string']);
+                    $operation->parameters[] = $csrf;
+                }
                 foreach ($operation->parameters as $parameter) {
                     if ($parameter instanceof Parameter && $parameter->name === 'id') {
                         $parameter->schema = self::schema(['type' => 'integer', 'minimum' => 1]);

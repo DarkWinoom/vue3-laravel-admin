@@ -1,3 +1,5 @@
+import type { components } from '@/service/api/openapi';
+
 export type Resource = 'users' | 'roles' | 'permissions' | 'menus';
 export interface RecordItem {
   children?: RecordItem[];
@@ -16,12 +18,8 @@ export interface RecordItem {
   icon?: string;
   sort?: number;
 }
-export interface Page {
+export interface Page extends Omit<components['schemas']['UserPage'], 'records'> {
   records: RecordItem[];
-  total: number;
-  page: number;
-  pageSize: number;
-  version: number;
 }
 export type Option = { label: string; value: string | number };
 export const titles: Record<Resource, string> = {

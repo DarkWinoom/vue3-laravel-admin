@@ -4,6 +4,7 @@ namespace App\Modules\Identity\Application;
 
 use App\Models\User;
 use App\Modules\Access\Application\AccessCommands;
+use App\Modules\Audit\Application\AuditRecorder;
 use Illuminate\Support\Facades\DB;
 
 final class UserCommands
@@ -43,6 +44,8 @@ final class UserCommands
             }
             DB::table('access_state')->where('id', 1)->increment('version');
 
+            app(AuditRecorder::class)->record($id ? 'user.updated' : 'user.created', $actor, $user->id, [...$data, 'passwordChanged' => ! empty($data['password'])]);
+
             return $user;
         });
 
@@ -58,6 +61,7 @@ final class UserCommands
             $this->access->protectLastAdmin($user);
             $this->access->record('user.roles', ['id' => $user->id, 'roleIds' => []], $actor);
             $user->delete();
+            app(AuditRecorder::class)->record('user.deleted', $actor, $id);
         });
 
     }

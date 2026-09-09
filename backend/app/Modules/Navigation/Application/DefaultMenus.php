@@ -11,6 +11,8 @@ final class DefaultMenus
         'roles' => ['manage_role', '/manage/role', '角色管理', 'carbon:user-role'],
         'permissions' => ['manage_permission', '/manage/permission', '权限管理', 'ic:round-security'],
         'menus' => ['manage_menu', '/manage/menu', '菜单管理', 'material-symbols:route'],
+        'audit' => ['manage_audit', '/manage/audit', '操作审计', 'mdi:clipboard-text-clock-outline'],
+        'docs' => ['manage_docs', '/manage/docs', 'API 文档', 'mdi:book-open-page-variant-outline'],
     ];
 
     public static function install(): void

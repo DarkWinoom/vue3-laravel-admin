@@ -22,7 +22,7 @@ final class MenuRequest extends FormRequest
             'name' => ['required', 'regex:/^[a-z][a-z0-9_-]*$/', 'max:100', Rule::notIn(['home', 'profile', 'login', 'root', '403', '404', '500', 'not-found', 'iframe-page']), Rule::unique('menus')->ignore($id)],
             'title' => 'required|string|max:100',
             'path' => ['required', 'regex:~^/[a-z][a-z0-9/_-]*$~', 'max:200', Rule::notIn(['/home', '/profile', '/login', '/403', '/404', '/500', '/iframe-page']), Rule::unique('menus')->ignore($id)],
-            'component' => ['required', Rule::in(['group', 'users', 'roles', 'permissions', 'menus'])],
+            'component' => ['required', Rule::in(['group', 'users', 'roles', 'permissions', 'menus', 'audit', 'docs'])],
             'parent_id' => 'nullable|integer|exists:menus,id', 'permission' => 'nullable|string|exists:permissions,name',
             'icon' => 'required|string|max:100', 'sort' => 'required|integer|min:0|max:10000', 'enabled' => 'required|boolean', 'version' => 'required|integer|min:0',
         ];

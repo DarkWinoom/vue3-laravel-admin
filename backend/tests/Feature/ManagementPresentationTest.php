@@ -23,7 +23,7 @@ final class ManagementPresentationTest extends TestCase
         $this->assertTrue($routes[1]['meta']['hideInMenu']);
         $this->assertSame('manage', $routes[2]['name']);
         $this->assertSame('carbon:cloud-service-management', $routes[2]['meta']['icon']);
-        $this->assertSame(['manage_user', 'manage_role', 'manage_permission', 'manage_menu'], array_column($routes[2]['children'], 'name'));
+        $this->assertSame(['manage_user', 'manage_role', 'manage_permission', 'manage_menu', 'manage_audit', 'manage_docs'], array_column($routes[2]['children'], 'name'));
         $this->assertSame('view.manage_user', $routes[2]['children'][0]['component']);
         $this->assertSame('ic:round-manage-accounts', $routes[2]['children'][0]['meta']['icon']);
         $this->assertSame('/manage/user', $routes[2]['children'][0]['path']);
@@ -44,7 +44,7 @@ final class ManagementPresentationTest extends TestCase
         $this->assertFalse((bool) $row->enabled);
         $this->assertNotNull($row->parent_id);
         DefaultMenus::install();
-        $this->assertDatabaseCount('menus', 5);
+        $this->assertDatabaseCount('menus', 7);
     }
 
     public function test_user_search_supports_the_official_name_email_and_status_fields(): void
@@ -63,7 +63,7 @@ final class ManagementPresentationTest extends TestCase
         $page = app(MenuQuery::class)->page(['pageSize' => 1]);
         $this->assertSame(1, $page['total']);
         $this->assertSame('manage', $page['records'][0]->name);
-        $this->assertCount(4, $page['records'][0]->children);
+        $this->assertCount(6, $page['records'][0]->children);
         $filtered = app(MenuQuery::class)->page(['search' => '用户']);
         $this->assertCount(1, $filtered['records'][0]->children);
         $this->assertSame('manage_user', $filtered['records'][0]->children[0]->name);

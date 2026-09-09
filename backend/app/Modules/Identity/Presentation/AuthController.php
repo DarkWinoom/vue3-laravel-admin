@@ -5,6 +5,7 @@ namespace App\Modules\Identity\Presentation;
 use App\Models\User;
 use App\Modules\Access\Application\AccessCommands;
 use App\Modules\Access\Application\AccessQuery;
+use App\Modules\Audit\Application\AuditRecorder;
 use App\Modules\Identity\Application\SessionService;
 use App\Shared\Api;
 use App\Shared\ApiException;
@@ -58,7 +59,10 @@ final class AuthController
         if ($session->client === 'web' && ! hash_equals($session->csrf_hash, hash('sha256', $request->header('X-CSRF-Token', '')))) {
             throw new ApiException(403, 'CSRF_INVALID', '请求校验失败');
         }
-        DB::table('refresh_sessions')->where('id', $session->id)->update(['revoked_at' => now()]);
+        DB::transaction(function () use ($session, $request) {
+            DB::table('refresh_sessions')->where('id', $session->id)->update(['revoked_at' => now()]);
+            app(AuditRecorder::class)->record('auth.logout', $request->user(), $request->user()->id);
+        });
 
         return Api::ok()->withoutCookie('refresh_token')->withoutCookie('csrf_token');
     }
@@ -79,6 +83,8 @@ final class AuthController
             $user->name = $data['name'];
             $user->save();
             DB::table('access_state')->where('id', 1)->increment('version');
+
+            app(AuditRecorder::class)->record('auth.profile', $user, $user->id, ['name' => $user->name, 'passwordChanged' => ! empty($data['password'])]);
 
             return $user;
         });

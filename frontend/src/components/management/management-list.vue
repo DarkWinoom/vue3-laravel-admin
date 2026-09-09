@@ -42,7 +42,12 @@ const {
     <ManagementSearch v-model:model="filters" :resource="resource" @search="getDataByPage(1)" @reset="reset" />
     <NCard :title="titles[resource]" :bordered="false" size="small" class="card-wrapper sm:flex-1-hidden">
       <template #header-extra>
-        <TableHeaderOperation v-model:columns="columnChecks" :loading="loading" @refresh="getData">
+        <TableHeaderOperation
+          v-model:columns="columnChecks"
+          :loading="loading"
+          :show-actions="false"
+          @refresh="getData"
+        >
           <NButton v-if="can('create')" size="small" ghost type="primary" @click="open()">
             <template #icon><icon-ic-round-plus class="text-icon" /></template>
             新增

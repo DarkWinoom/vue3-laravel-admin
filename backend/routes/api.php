@@ -2,6 +2,9 @@
 
 use App\Http\Controllers\HealthController;
 use App\Modules\Access\Presentation\AccessController;
+use App\Modules\Audit\Presentation\AuditController;
+use App\Modules\Dashboard\Presentation\DashboardController;
+use App\Modules\Documentation\Presentation\DocumentationController;
 use App\Modules\Identity\Presentation\AuthController;
 use App\Modules\Identity\Presentation\AuthenticateSession;
 use App\Modules\Identity\Presentation\TrustedOrigin;
@@ -17,6 +20,9 @@ Route::prefix('v1')->group(function () {
         Route::post('auth/refresh', [AuthController::class, 'refresh'])->middleware('throttle:60,1');
     });
     Route::middleware(AuthenticateSession::class)->group(function () {
+        Route::get('audit-logs', [AuditController::class, 'index']);
+        Route::get('openapi', DocumentationController::class);
+        Route::get('dashboard', DashboardController::class);
         Route::get('auth/me', [AuthController::class, 'me']);
         Route::post('auth/logout', [AuthController::class, 'logout'])->middleware(TrustedOrigin::class);
         Route::put('auth/profile', [AuthController::class, 'profile']);

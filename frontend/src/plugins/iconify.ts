@@ -1,5 +1,9 @@
-import { addAPIProvider, addIcon } from '@iconify/vue';
+import { addIcon } from '@iconify/vue/offline';
 import managementIcons from '@/assets/icons/management.json';
+
+export const localIconNames = managementIcons.flatMap(collection =>
+  Object.keys(collection.icons).map(name => collection.prefix + ':' + name)
+);
 
 /** Setup the iconify offline */
 export function setupIconifyOffline() {
@@ -9,9 +13,4 @@ export function setupIconifyOffline() {
         addIcon(collection.prefix + ':' + name, { width: collection.width, height: collection.height, ...icon });
     });
   });
-  const { VITE_ICONIFY_URL } = import.meta.env;
-
-  if (VITE_ICONIFY_URL) {
-    addAPIProvider('', { resources: [VITE_ICONIFY_URL] });
-  }
 }

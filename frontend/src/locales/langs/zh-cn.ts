@@ -221,6 +221,8 @@ const local: App.I18n.Schema = {
     manage_role: '角色管理',
     manage_permission: '权限管理',
     manage_menu: '菜单管理',
+    manage_audit: '操作审计',
+    manage_docs: 'API 文档',
     profile: '个人中心',
     login: '登录',
     403: '无权限',

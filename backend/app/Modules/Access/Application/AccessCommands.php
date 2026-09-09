@@ -4,6 +4,7 @@ namespace App\Modules\Access\Application;
 
 use App\Models\User;
 use App\Modules\Access\Domain\AccessAggregate;
+use App\Modules\Audit\Application\AuditRecorder;
 use App\Shared\ApiException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -22,7 +23,7 @@ final class AccessCommands
             }
         }
 
-        return $permissions;
+        return [...$permissions, 'audit.read', 'docs.read'];
     }
 
     public function lock(?int $version = null): void
@@ -52,6 +53,7 @@ final class AccessCommands
     {
         AccessAggregate::retrieve(AccessAggregate::UUID)->change($action, $data, $actor?->id, (string) Str::uuid())->persist();
         DB::table('access_state')->where('id', 1)->increment('version');
+        app(AuditRecorder::class)->record($action, $actor, $data['id'] ?? null, $data);
     }
 
     /** @param list<int> $roleIds */

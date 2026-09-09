@@ -31,7 +31,10 @@
     "install:local": "pnpm --dir frontend install --frozen-lockfile && composer --working-dir=backend install",
     "docker:up": "node scripts/docker.mjs up",
     "docker:update": "node scripts/docker.mjs update",
-    "docker:down": "node scripts/docker.mjs down"
+    "docker:down": "node scripts/docker.mjs down",
+    "api:generate": "node scripts/openapi.mjs",
+    "api:check": "node scripts/openapi.mjs --check",
+    "icons:generate": "node scripts/icons.mjs"
   },
   "devDependencies": {
     "concurrently": "9.2.1",

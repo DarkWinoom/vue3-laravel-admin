@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, useAttrs } from 'vue';
-import { Icon } from '@iconify/vue';
+import { Icon } from '@iconify/vue/offline';
+import { localIconNames } from '@/plugins/iconify';
 
 defineOptions({ name: 'SvgIcon', inheritAttrs: false });
 
@@ -37,7 +38,7 @@ const symbolId = computed(() => {
 });
 
 /** If localIcon is passed, render localIcon first */
-const renderLocalIcon = computed(() => props.localIcon || !props.icon);
+const renderLocalIcon = computed(() => props.localIcon || !props.icon || !localIconNames.includes(props.icon));
 </script>
 
 <template>

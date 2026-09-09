@@ -37,7 +37,9 @@ const pages = [
   { label: '用户管理', value: 'users' },
   { label: '角色管理', value: 'roles' },
   { label: '权限管理', value: 'permissions' },
-  { label: '菜单管理', value: 'menus' }
+  { label: '菜单管理', value: 'menus' },
+  { label: '操作审计', value: 'audit' },
+  { label: 'API 文档', value: 'docs' }
 ];
 const rules = {
   name: { required: true, message: '请输入路由名称', trigger: 'blur' },

@@ -6,12 +6,13 @@ defineOptions({
 });
 
 interface Props {
+  showActions?: boolean;
   itemAlign?: NaiveUI.Align;
   disabledDelete?: boolean;
   loading?: boolean;
 }
 
-defineProps<Props>();
+withDefaults(defineProps<Props>(), { showActions: true });
 
 interface Emits {
   (e: 'add'): void;
@@ -42,13 +43,13 @@ function refresh() {
   <NSpace :align="itemAlign" wrap justify="end" class="lt-sm:w-200px">
     <slot name="prefix"></slot>
     <slot name="default">
-      <NButton size="small" ghost type="primary" @click="add">
+      <NButton v-if="showActions" size="small" ghost type="primary" @click="add">
         <template #icon>
           <icon-ic-round-plus class="text-icon" />
         </template>
         {{ $t('common.add') }}
       </NButton>
-      <NPopconfirm @positive-click="batchDelete">
+      <NPopconfirm v-if="showActions" @positive-click="batchDelete">
         <template #trigger>
           <NButton size="small" ghost type="error" :disabled="disabledDelete">
             <template #icon>

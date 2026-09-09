@@ -7,6 +7,8 @@ use App\Modules\Access\Application\AccessQuery;
 use App\Modules\Access\Infrastructure\AccessProjector;
 use App\Modules\Access\Presentation\CreateAdminCommand;
 use App\Modules\Access\Presentation\ReplayAccessCommand;
+use App\Modules\Documentation\Application\ApiDocument;
+use Dedoc\Scramble\Scramble;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -21,7 +23,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        Scramble::ignoreDefaultRoutes();
     }
 
     /**
@@ -29,6 +31,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Scramble::configure()->withDocumentTransformers([ApiDocument::class]);
         app(Projectionist::class)->addProjector(AccessProjector::class);
         Gate::before(fn (User $user, string $ability) => app(AccessQuery::class)->allows($user, $ability));
         RateLimiter::for('login', fn (Request $request) => [

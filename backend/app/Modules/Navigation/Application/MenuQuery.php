@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\DB;
 
 final class MenuQuery
 {
-    public const VIEWS = ['users' => 'manage_user', 'roles' => 'manage_role', 'permissions' => 'manage_permission', 'menus' => 'manage_menu'];
+    public const VIEWS = ['users' => 'manage_user', 'roles' => 'manage_role', 'permissions' => 'manage_permission', 'menus' => 'manage_menu', 'audit' => 'manage_audit', 'docs' => 'manage_docs'];
 
     /** @param array<string, mixed> $filters
      * @return array<string, mixed>
@@ -43,6 +43,9 @@ final class MenuQuery
         $build = function (?int $parentId) use (&$build, $menus, $permissions): array {
             $routes = [];
             foreach ($menus as $menu) {
+                if ($menu->component === 'docs' && ! config('documentation.enabled')) {
+                    continue;
+                }
                 if ($menu->parent_id !== $parentId || ($menu->permission && ! in_array($menu->permission, $permissions, true))) {
                     continue;
                 }

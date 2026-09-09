@@ -3,6 +3,7 @@
 namespace App\Modules\Identity\Application;
 
 use App\Models\User;
+use App\Modules\Audit\Application\AuditRecorder;
 use App\Shared\ApiException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -27,6 +28,8 @@ final class SessionService
                 'expires_at' => now()->addMinutes(config('identity.refresh_minutes')),
                 'created_at' => now(), 'updated_at' => now(),
             ]);
+
+            app(AuditRecorder::class)->record('auth.login', $user, $user->id, ['client' => $client]);
 
             return $this->issue($user, $id, $csrf);
         });
@@ -60,6 +63,8 @@ final class SessionService
                 return null;
             }
             DB::table('refresh_credentials')->where('hash', $entry->hash)->update(['used_at' => now()]);
+
+            app(AuditRecorder::class)->record('auth.refresh', $user, $user->id, ['client' => $client]);
 
             return $this->issue($user, $session->id, $csrf);
         });

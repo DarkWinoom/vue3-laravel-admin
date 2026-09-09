@@ -4,6 +4,7 @@ namespace App\Modules\Navigation\Application;
 
 use App\Models\User;
 use App\Modules\Access\Application\AccessCommands;
+use App\Modules\Audit\Application\AuditRecorder;
 use App\Shared\ApiException;
 use Illuminate\Support\Facades\DB;
 
@@ -45,6 +46,8 @@ final class MenuCommands
             }
             DB::table('access_state')->where('id', 1)->increment('version');
 
+            app(AuditRecorder::class)->record('menu.saved', $actor, $id, $data);
+
             return $id;
         });
 
@@ -62,6 +65,7 @@ final class MenuCommands
                 throw new ApiException(404, 'NOT_FOUND', '菜单不存在');
             }
             DB::table('access_state')->where('id', 1)->increment('version');
+            app(AuditRecorder::class)->record('menu.deleted', $actor, $id);
         });
 
     }

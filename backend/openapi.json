@@ -1,0 +1,1966 @@
+{
+    "openapi": "3.1.0",
+    "info": {
+        "title": "Vue3 Laravel Admin",
+        "version": "0.0.1",
+        "description": "管理 API。成功包络 code=0000；失败使用对应 HTTP 状态及业务 code。写入管理数据须提交最新列表 version，冲突返回 409。Web 登录使用 HttpOnly 刷新 Cookie，刷新及退出须带 X-CSRF-Token；desktop 使用响应中的 refreshToken。所有统计按实时权限过滤，审计时间使用 UTC。"
+    },
+    "servers": [{ "url": "/api" }],
+    "security": [{ "bearerAuth": [] }],
+    "paths": {
+        "/v1/roles": {
+            "get": {
+                "operationId": "rolesGet",
+                "tags": ["Access"],
+                "parameters": [
+                    { "name": "page", "in": "query", "schema": { "type": "integer", "minimum": 1 } },
+                    {
+                        "name": "pageSize",
+                        "in": "query",
+                        "schema": { "type": "integer", "minimum": 1, "maximum": 100 }
+                    },
+                    { "name": "search", "in": "query", "schema": { "type": ["string", "null"], "maxLength": 100 } }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": { "type": "string", "const": "0000" },
+                                        "msg": { "type": "string" },
+                                        "data": { "$ref": "#/components/schemas/RolePage" }
+                                    },
+                                    "required": ["code", "msg", "data"]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "未登录、令牌过期或会话撤销",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "403": {
+                        "description": "无权限或来源/CSRF 校验失败",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "404": {
+                        "description": "记录不存在",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "409": {
+                        "description": "版本冲突或受保护的数据",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "422": {
+                        "description": "输入校验失败",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "429": {
+                        "description": "请求过于频繁",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "500": {
+                        "description": "服务暂时不可用",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    }
+                },
+                "security": [{ "bearerAuth": [] }]
+            },
+            "post": {
+                "operationId": "rolesPost",
+                "tags": ["Access"],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "name": { "type": "string", "pattern": "^[a-z][a-z0-9_.-]*$", "maxLength": 100 },
+                                    "version": { "type": "integer", "minimum": 0 },
+                                    "permissionIds": {
+                                        "type": "array",
+                                        "items": { "type": "integer" },
+                                        "maxItems": 500,
+                                        "uniqueItems": true
+                                    }
+                                },
+                                "required": ["name", "version", "permissionIds"],
+                                "title": "AccessRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": { "type": "string", "const": "0000" },
+                                        "msg": { "type": "string" },
+                                        "data": { "$ref": "#/components/schemas/Saved" }
+                                    },
+                                    "required": ["code", "msg", "data"]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "未登录、令牌过期或会话撤销",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "403": {
+                        "description": "无权限或来源/CSRF 校验失败",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "404": {
+                        "description": "记录不存在",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "409": {
+                        "description": "版本冲突或受保护的数据",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "422": {
+                        "description": "输入校验失败",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "429": {
+                        "description": "请求过于频繁",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "500": {
+                        "description": "服务暂时不可用",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    }
+                },
+                "security": [{ "bearerAuth": [] }]
+            }
+        },
+        "/v1/permissions": {
+            "get": {
+                "operationId": "permissionsGet",
+                "tags": ["Access"],
+                "parameters": [
+                    { "name": "page", "in": "query", "schema": { "type": "integer", "minimum": 1 } },
+                    {
+                        "name": "pageSize",
+                        "in": "query",
+                        "schema": { "type": "integer", "minimum": 1, "maximum": 100 }
+                    },
+                    { "name": "search", "in": "query", "schema": { "type": ["string", "null"], "maxLength": 100 } }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": { "type": "string", "const": "0000" },
+                                        "msg": { "type": "string" },
+                                        "data": { "$ref": "#/components/schemas/PermissionPage" }
+                                    },
+                                    "required": ["code", "msg", "data"]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "未登录、令牌过期或会话撤销",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "403": {
+                        "description": "无权限或来源/CSRF 校验失败",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "404": {
+                        "description": "记录不存在",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "409": {
+                        "description": "版本冲突或受保护的数据",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "422": {
+                        "description": "输入校验失败",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "429": {
+                        "description": "请求过于频繁",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "500": {
+                        "description": "服务暂时不可用",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    }
+                },
+                "security": [{ "bearerAuth": [] }]
+            },
+            "post": {
+                "operationId": "permissionsPost",
+                "tags": ["Access"],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "name": { "type": "string", "pattern": "^[a-z][a-z0-9_.-]*$", "maxLength": 100 },
+                                    "version": { "type": "integer", "minimum": 0 },
+                                    "permissionIds": {
+                                        "type": "array",
+                                        "items": { "type": "integer" },
+                                        "maxItems": 500,
+                                        "uniqueItems": true
+                                    }
+                                },
+                                "required": ["name", "version"],
+                                "title": "AccessRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": { "type": "string", "const": "0000" },
+                                        "msg": { "type": "string" },
+                                        "data": { "$ref": "#/components/schemas/Saved" }
+                                    },
+                                    "required": ["code", "msg", "data"]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "未登录、令牌过期或会话撤销",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "403": {
+                        "description": "无权限或来源/CSRF 校验失败",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "404": {
+                        "description": "记录不存在",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "409": {
+                        "description": "版本冲突或受保护的数据",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "422": {
+                        "description": "输入校验失败",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "429": {
+                        "description": "请求过于频繁",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "500": {
+                        "description": "服务暂时不可用",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    }
+                },
+                "security": [{ "bearerAuth": [] }]
+            }
+        },
+        "/v1/roles/{id}": {
+            "put": {
+                "operationId": "rolesPutById",
+                "tags": ["Access"],
+                "parameters": [
+                    { "name": "id", "in": "path", "required": true, "schema": { "type": "integer", "minimum": 1 } }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "name": { "type": "string", "pattern": "^[a-z][a-z0-9_.-]*$", "maxLength": 100 },
+                                    "version": { "type": "integer", "minimum": 0 },
+                                    "permissionIds": {
+                                        "type": "array",
+                                        "items": { "type": "integer" },
+                                        "maxItems": 500,
+                                        "uniqueItems": true
+                                    }
+                                },
+                                "required": ["name", "version", "permissionIds"],
+                                "title": "AccessRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": { "type": "string", "const": "0000" },
+                                        "msg": { "type": "string" },
+                                        "data": { "$ref": "#/components/schemas/Saved" }
+                                    },
+                                    "required": ["code", "msg", "data"]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "未登录、令牌过期或会话撤销",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "403": {
+                        "description": "无权限或来源/CSRF 校验失败",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "404": {
+                        "description": "记录不存在",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "409": {
+                        "description": "版本冲突或受保护的数据",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "422": {
+                        "description": "输入校验失败",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "429": {
+                        "description": "请求过于频繁",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "500": {
+                        "description": "服务暂时不可用",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    }
+                },
+                "security": [{ "bearerAuth": [] }]
+            },
+            "delete": {
+                "operationId": "rolesDeleteById",
+                "tags": ["Access"],
+                "parameters": [
+                    { "name": "id", "in": "path", "required": true, "schema": { "type": "integer", "minimum": 1 } },
+                    {
+                        "name": "version",
+                        "in": "query",
+                        "required": true,
+                        "schema": { "type": "integer", "minimum": 0 }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": { "type": "string", "const": "0000" },
+                                        "msg": { "type": "string" },
+                                        "data": { "type": "null" }
+                                    },
+                                    "required": ["code", "msg", "data"]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "未登录、令牌过期或会话撤销",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "403": {
+                        "description": "无权限或来源/CSRF 校验失败",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "404": {
+                        "description": "记录不存在",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "409": {
+                        "description": "版本冲突或受保护的数据",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "422": {
+                        "description": "输入校验失败",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "429": {
+                        "description": "请求过于频繁",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "500": {
+                        "description": "服务暂时不可用",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    }
+                },
+                "security": [{ "bearerAuth": [] }]
+            }
+        },
+        "/v1/permissions/{id}": {
+            "put": {
+                "operationId": "permissionsPutById",
+                "tags": ["Access"],
+                "parameters": [
+                    { "name": "id", "in": "path", "required": true, "schema": { "type": "integer", "minimum": 1 } }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "name": { "type": "string", "pattern": "^[a-z][a-z0-9_.-]*$", "maxLength": 100 },
+                                    "version": { "type": "integer", "minimum": 0 },
+                                    "permissionIds": {
+                                        "type": "array",
+                                        "items": { "type": "integer" },
+                                        "maxItems": 500,
+                                        "uniqueItems": true
+                                    }
+                                },
+                                "required": ["name", "version"],
+                                "title": "AccessRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": { "type": "string", "const": "0000" },
+                                        "msg": { "type": "string" },
+                                        "data": { "$ref": "#/components/schemas/Saved" }
+                                    },
+                                    "required": ["code", "msg", "data"]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "未登录、令牌过期或会话撤销",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "403": {
+                        "description": "无权限或来源/CSRF 校验失败",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "404": {
+                        "description": "记录不存在",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "409": {
+                        "description": "版本冲突或受保护的数据",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "422": {
+                        "description": "输入校验失败",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "429": {
+                        "description": "请求过于频繁",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "500": {
+                        "description": "服务暂时不可用",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    }
+                },
+                "security": [{ "bearerAuth": [] }]
+            },
+            "delete": {
+                "operationId": "permissionsDeleteById",
+                "tags": ["Access"],
+                "parameters": [
+                    { "name": "id", "in": "path", "required": true, "schema": { "type": "integer", "minimum": 1 } },
+                    {
+                        "name": "version",
+                        "in": "query",
+                        "required": true,
+                        "schema": { "type": "integer", "minimum": 0 }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": { "type": "string", "const": "0000" },
+                                        "msg": { "type": "string" },
+                                        "data": { "type": "null" }
+                                    },
+                                    "required": ["code", "msg", "data"]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "未登录、令牌过期或会话撤销",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "403": {
+                        "description": "无权限或来源/CSRF 校验失败",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "404": {
+                        "description": "记录不存在",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "409": {
+                        "description": "版本冲突或受保护的数据",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "422": {
+                        "description": "输入校验失败",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "429": {
+                        "description": "请求过于频繁",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "500": {
+                        "description": "服务暂时不可用",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    }
+                },
+                "security": [{ "bearerAuth": [] }]
+            }
+        },
+        "/v1/audit-logs": {
+            "get": {
+                "operationId": "audit.index",
+                "tags": ["Audit"],
+                "parameters": [
+                    { "name": "page", "in": "query", "schema": { "type": "integer", "minimum": 1 } },
+                    {
+                        "name": "pageSize",
+                        "in": "query",
+                        "schema": { "type": "integer", "minimum": 1, "maximum": 100 }
+                    },
+                    { "name": "actor", "in": "query", "schema": { "type": ["string", "null"], "maxLength": 100 } },
+                    { "name": "action", "in": "query", "schema": { "type": ["string", "null"], "maxLength": 100 } },
+                    {
+                        "name": "result",
+                        "in": "query",
+                        "schema": { "type": ["string", "null"], "enum": ["success", "failure", null] }
+                    },
+                    { "name": "requestId", "in": "query", "schema": { "type": ["string", "null"], "format": "uuid" } },
+                    { "name": "dateFrom", "in": "query", "schema": { "type": ["string", "null"], "format": "date" } },
+                    { "name": "dateTo", "in": "query", "schema": { "type": ["string", "null"], "format": "date" } }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": { "type": "string", "const": "0000" },
+                                        "msg": { "type": "string" },
+                                        "data": { "$ref": "#/components/schemas/AuditPage" }
+                                    },
+                                    "required": ["code", "msg", "data"]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "未登录、令牌过期或会话撤销",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "403": {
+                        "description": "无权限或来源/CSRF 校验失败",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "404": {
+                        "description": "记录不存在",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "409": {
+                        "description": "版本冲突或受保护的数据",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "422": {
+                        "description": "输入校验失败",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "429": {
+                        "description": "请求过于频繁",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "500": {
+                        "description": "服务暂时不可用",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    }
+                },
+                "security": [{ "bearerAuth": [] }]
+            }
+        },
+        "/v1/auth/login": {
+            "post": {
+                "operationId": "auth.login",
+                "tags": ["Auth"],
+                "requestBody": {
+                    "required": true,
+                    "content": { "application/json": { "schema": { "$ref": "#/components/schemas/LoginRequest" } } }
+                },
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": { "type": "string", "const": "0000" },
+                                        "msg": { "type": "string" },
+                                        "data": { "$ref": "#/components/schemas/Tokens" }
+                                    },
+                                    "required": ["code", "msg", "data"]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "未登录、令牌过期或会话撤销",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "403": {
+                        "description": "无权限或来源/CSRF 校验失败",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "404": {
+                        "description": "记录不存在",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "409": {
+                        "description": "版本冲突或受保护的数据",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "422": {
+                        "description": "输入校验失败",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "429": {
+                        "description": "请求过于频繁",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "500": {
+                        "description": "服务暂时不可用",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    }
+                },
+                "security": [{}]
+            }
+        },
+        "/v1/auth/refresh": {
+            "post": {
+                "operationId": "auth.refresh",
+                "tags": ["Auth"],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "client": { "type": "string", "enum": ["web", "desktop"] },
+                                    "refreshToken": { "type": ["string", "null"], "maxLength": 100 }
+                                },
+                                "required": ["client"]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": { "type": "string", "const": "0000" },
+                                        "msg": { "type": "string" },
+                                        "data": { "$ref": "#/components/schemas/Tokens" }
+                                    },
+                                    "required": ["code", "msg", "data"]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "未登录、令牌过期或会话撤销",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "403": {
+                        "description": "无权限或来源/CSRF 校验失败",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "404": {
+                        "description": "记录不存在",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "409": {
+                        "description": "版本冲突或受保护的数据",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "422": {
+                        "description": "输入校验失败",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "429": {
+                        "description": "请求过于频繁",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "500": {
+                        "description": "服务暂时不可用",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    }
+                },
+                "security": [{}]
+            }
+        },
+        "/v1/auth/me": {
+            "get": {
+                "operationId": "auth.me",
+                "tags": ["Auth"],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": { "type": "string", "const": "0000" },
+                                        "msg": { "type": "string" },
+                                        "data": { "$ref": "#/components/schemas/Identity" }
+                                    },
+                                    "required": ["code", "msg", "data"]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "未登录、令牌过期或会话撤销",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "403": {
+                        "description": "无权限或来源/CSRF 校验失败",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "404": {
+                        "description": "记录不存在",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "409": {
+                        "description": "版本冲突或受保护的数据",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "422": {
+                        "description": "输入校验失败",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "429": {
+                        "description": "请求过于频繁",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "500": {
+                        "description": "服务暂时不可用",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    }
+                },
+                "security": [{ "bearerAuth": [] }]
+            }
+        },
+        "/v1/auth/logout": {
+            "post": {
+                "operationId": "auth.logout",
+                "tags": ["Auth"],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": { "type": "string", "const": "0000" },
+                                        "msg": { "type": "string" },
+                                        "data": { "type": "null" }
+                                    },
+                                    "required": ["code", "msg", "data"]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "未登录、令牌过期或会话撤销",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "403": {
+                        "description": "无权限或来源/CSRF 校验失败",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "404": {
+                        "description": "记录不存在",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "409": {
+                        "description": "版本冲突或受保护的数据",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "422": {
+                        "description": "输入校验失败",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "429": {
+                        "description": "请求过于频繁",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "500": {
+                        "description": "服务暂时不可用",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    }
+                },
+                "security": [{ "bearerAuth": [] }]
+            }
+        },
+        "/v1/auth/profile": {
+            "put": {
+                "operationId": "auth.profile",
+                "tags": ["Auth"],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "name": { "type": "string", "maxLength": 100 },
+                                    "currentPassword": { "type": "string" },
+                                    "password": { "type": ["string", "null"], "minLength": 12, "maxLength": 128 },
+                                    "password_confirmation": {
+                                        "type": ["string", "null"],
+                                        "minLength": 12,
+                                        "maxLength": 128
+                                    }
+                                },
+                                "required": ["name"]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": { "type": "string", "const": "0000" },
+                                        "msg": { "type": "string" },
+                                        "data": { "$ref": "#/components/schemas/Identity" }
+                                    },
+                                    "required": ["code", "msg", "data"]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "未登录、令牌过期或会话撤销",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "403": {
+                        "description": "无权限或来源/CSRF 校验失败",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "404": {
+                        "description": "记录不存在",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "409": {
+                        "description": "版本冲突或受保护的数据",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "422": {
+                        "description": "输入校验失败",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "429": {
+                        "description": "请求过于频繁",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "500": {
+                        "description": "服务暂时不可用",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    }
+                },
+                "security": [{ "bearerAuth": [] }]
+            }
+        },
+        "/v1/dashboard": {
+            "get": {
+                "operationId": "presentation.dashboard",
+                "tags": ["Dashboard"],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": { "type": "string", "const": "0000" },
+                                        "msg": { "type": "string" },
+                                        "data": { "$ref": "#/components/schemas/Dashboard" }
+                                    },
+                                    "required": ["code", "msg", "data"]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "未登录、令牌过期或会话撤销",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "403": {
+                        "description": "无权限或来源/CSRF 校验失败",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "404": {
+                        "description": "记录不存在",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "409": {
+                        "description": "版本冲突或受保护的数据",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "422": {
+                        "description": "输入校验失败",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "429": {
+                        "description": "请求过于频繁",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "500": {
+                        "description": "服务暂时不可用",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    }
+                },
+                "security": [{ "bearerAuth": [] }]
+            }
+        },
+        "/v1/health": {
+            "get": {
+                "operationId": "health",
+                "tags": ["Health"],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": { "status": { "type": "string", "const": "ok" } },
+                                    "required": ["status"]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "未登录、令牌过期或会话撤销",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "403": {
+                        "description": "无权限或来源/CSRF 校验失败",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "404": {
+                        "description": "记录不存在",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "409": {
+                        "description": "版本冲突或受保护的数据",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "422": {
+                        "description": "输入校验失败",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "429": {
+                        "description": "请求过于频繁",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "500": {
+                        "description": "服务暂时不可用",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    }
+                },
+                "security": [{}]
+            }
+        },
+        "/v1/navigation/routes": {
+            "get": {
+                "operationId": "menu.routes",
+                "tags": ["Menu"],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": { "type": "string", "const": "0000" },
+                                        "msg": { "type": "string" },
+                                        "data": { "$ref": "#/components/schemas/Navigation" }
+                                    },
+                                    "required": ["code", "msg", "data"]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "未登录、令牌过期或会话撤销",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "403": {
+                        "description": "无权限或来源/CSRF 校验失败",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "404": {
+                        "description": "记录不存在",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "409": {
+                        "description": "版本冲突或受保护的数据",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "422": {
+                        "description": "输入校验失败",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "429": {
+                        "description": "请求过于频繁",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "500": {
+                        "description": "服务暂时不可用",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    }
+                },
+                "security": [{ "bearerAuth": [] }]
+            }
+        },
+        "/v1/menus": {
+            "get": {
+                "operationId": "menu.index",
+                "tags": ["Menu"],
+                "parameters": [
+                    { "name": "page", "in": "query", "schema": { "type": "integer", "minimum": 1 } },
+                    {
+                        "name": "pageSize",
+                        "in": "query",
+                        "schema": { "type": "integer", "minimum": 1, "maximum": 100 }
+                    },
+                    { "name": "search", "in": "query", "schema": { "type": ["string", "null"], "maxLength": 100 } }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": { "type": "string", "const": "0000" },
+                                        "msg": { "type": "string" },
+                                        "data": { "$ref": "#/components/schemas/MenuPage" }
+                                    },
+                                    "required": ["code", "msg", "data"]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "未登录、令牌过期或会话撤销",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "403": {
+                        "description": "无权限或来源/CSRF 校验失败",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "404": {
+                        "description": "记录不存在",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "409": {
+                        "description": "版本冲突或受保护的数据",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "422": {
+                        "description": "输入校验失败",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "429": {
+                        "description": "请求过于频繁",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "500": {
+                        "description": "服务暂时不可用",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    }
+                },
+                "security": [{ "bearerAuth": [] }]
+            },
+            "post": {
+                "operationId": "modules.navigation.presentation.menu.save_14",
+                "tags": ["Menu"],
+                "requestBody": {
+                    "required": true,
+                    "content": { "application/json": { "schema": { "$ref": "#/components/schemas/MenuRequest" } } }
+                },
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": { "type": "string", "const": "0000" },
+                                        "msg": { "type": "string" },
+                                        "data": { "$ref": "#/components/schemas/SavedMenu" }
+                                    },
+                                    "required": ["code", "msg", "data"]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "未登录、令牌过期或会话撤销",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "403": {
+                        "description": "无权限或来源/CSRF 校验失败",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "404": {
+                        "description": "记录不存在",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "409": {
+                        "description": "版本冲突或受保护的数据",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "422": {
+                        "description": "输入校验失败",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "429": {
+                        "description": "请求过于频繁",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "500": {
+                        "description": "服务暂时不可用",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    }
+                },
+                "security": [{ "bearerAuth": [] }]
+            }
+        },
+        "/v1/menus/{id}": {
+            "put": {
+                "operationId": "modules.navigation.presentation.menu.save_15",
+                "tags": ["Menu"],
+                "parameters": [
+                    { "name": "id", "in": "path", "required": true, "schema": { "type": "integer", "minimum": 1 } }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": { "application/json": { "schema": { "$ref": "#/components/schemas/MenuRequest" } } }
+                },
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": { "type": "string", "const": "0000" },
+                                        "msg": { "type": "string" },
+                                        "data": { "$ref": "#/components/schemas/SavedMenu" }
+                                    },
+                                    "required": ["code", "msg", "data"]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "未登录、令牌过期或会话撤销",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "403": {
+                        "description": "无权限或来源/CSRF 校验失败",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "404": {
+                        "description": "记录不存在",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "409": {
+                        "description": "版本冲突或受保护的数据",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "422": {
+                        "description": "输入校验失败",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "429": {
+                        "description": "请求过于频繁",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "500": {
+                        "description": "服务暂时不可用",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    }
+                },
+                "security": [{ "bearerAuth": [] }]
+            },
+            "delete": {
+                "operationId": "menu.destroy",
+                "tags": ["Menu"],
+                "parameters": [
+                    { "name": "id", "in": "path", "required": true, "schema": { "type": "integer", "minimum": 1 } },
+                    {
+                        "name": "version",
+                        "in": "query",
+                        "required": true,
+                        "schema": { "type": "integer", "minimum": 0 }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": { "type": "string", "const": "0000" },
+                                        "msg": { "type": "string" },
+                                        "data": { "type": "null" }
+                                    },
+                                    "required": ["code", "msg", "data"]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "未登录、令牌过期或会话撤销",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "403": {
+                        "description": "无权限或来源/CSRF 校验失败",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "404": {
+                        "description": "记录不存在",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "409": {
+                        "description": "版本冲突或受保护的数据",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "422": {
+                        "description": "输入校验失败",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "429": {
+                        "description": "请求过于频繁",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "500": {
+                        "description": "服务暂时不可用",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    }
+                },
+                "security": [{ "bearerAuth": [] }]
+            }
+        },
+        "/v1/users": {
+            "get": {
+                "operationId": "user.index",
+                "tags": ["User"],
+                "parameters": [
+                    { "name": "page", "in": "query", "schema": { "type": "integer", "minimum": 1 } },
+                    {
+                        "name": "pageSize",
+                        "in": "query",
+                        "schema": { "type": "integer", "minimum": 1, "maximum": 100 }
+                    },
+                    { "name": "search", "in": "query", "schema": { "type": ["string", "null"], "maxLength": 100 } },
+                    { "name": "name", "in": "query", "schema": { "type": ["string", "null"], "maxLength": 100 } },
+                    { "name": "email", "in": "query", "schema": { "type": ["string", "null"], "maxLength": 255 } },
+                    { "name": "enabled", "in": "query", "schema": { "type": ["boolean", "null"] } }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": { "type": "string", "const": "0000" },
+                                        "msg": { "type": "string" },
+                                        "data": { "$ref": "#/components/schemas/UserPage" }
+                                    },
+                                    "required": ["code", "msg", "data"]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "未登录、令牌过期或会话撤销",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "403": {
+                        "description": "无权限或来源/CSRF 校验失败",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "404": {
+                        "description": "记录不存在",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "409": {
+                        "description": "版本冲突或受保护的数据",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "422": {
+                        "description": "输入校验失败",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "429": {
+                        "description": "请求过于频繁",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "500": {
+                        "description": "服务暂时不可用",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    }
+                },
+                "security": [{ "bearerAuth": [] }]
+            },
+            "post": {
+                "operationId": "modules.identity.presentation.user.save_10",
+                "tags": ["User"],
+                "requestBody": {
+                    "required": true,
+                    "content": { "application/json": { "schema": { "$ref": "#/components/schemas/UserRequest" } } }
+                },
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": { "type": "string", "const": "0000" },
+                                        "msg": { "type": "string" },
+                                        "data": { "$ref": "#/components/schemas/Saved" }
+                                    },
+                                    "required": ["code", "msg", "data"]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "未登录、令牌过期或会话撤销",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "403": {
+                        "description": "无权限或来源/CSRF 校验失败",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "404": {
+                        "description": "记录不存在",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "409": {
+                        "description": "版本冲突或受保护的数据",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "422": {
+                        "description": "输入校验失败",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "429": {
+                        "description": "请求过于频繁",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "500": {
+                        "description": "服务暂时不可用",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    }
+                },
+                "security": [{ "bearerAuth": [] }]
+            }
+        },
+        "/v1/users/{id}": {
+            "put": {
+                "operationId": "modules.identity.presentation.user.save_11",
+                "tags": ["User"],
+                "parameters": [
+                    { "name": "id", "in": "path", "required": true, "schema": { "type": "integer", "minimum": 1 } }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "name": { "type": "string", "maxLength": 100 },
+                                    "email": { "type": "string", "format": "email", "maxLength": 255 },
+                                    "password": { "type": ["string", "null"], "minLength": 12, "maxLength": 128 },
+                                    "enabled": { "type": "boolean" },
+                                    "roleIds": {
+                                        "type": "array",
+                                        "items": { "type": "integer" },
+                                        "maxItems": 100,
+                                        "uniqueItems": true
+                                    },
+                                    "version": { "type": "integer", "minimum": 0 }
+                                },
+                                "required": ["name", "email", "enabled", "version"],
+                                "title": "UserRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": { "type": "string", "const": "0000" },
+                                        "msg": { "type": "string" },
+                                        "data": { "$ref": "#/components/schemas/Saved" }
+                                    },
+                                    "required": ["code", "msg", "data"]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "未登录、令牌过期或会话撤销",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "403": {
+                        "description": "无权限或来源/CSRF 校验失败",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "404": {
+                        "description": "记录不存在",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "409": {
+                        "description": "版本冲突或受保护的数据",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "422": {
+                        "description": "输入校验失败",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "429": {
+                        "description": "请求过于频繁",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "500": {
+                        "description": "服务暂时不可用",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    }
+                },
+                "security": [{ "bearerAuth": [] }]
+            },
+            "delete": {
+                "operationId": "user.destroy",
+                "tags": ["User"],
+                "parameters": [
+                    { "name": "id", "in": "path", "required": true, "schema": { "type": "integer", "minimum": 1 } },
+                    {
+                        "name": "version",
+                        "in": "query",
+                        "required": true,
+                        "schema": { "type": "integer", "minimum": 0 }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": { "type": "string", "const": "0000" },
+                                        "msg": { "type": "string" },
+                                        "data": { "type": "null" }
+                                    },
+                                    "required": ["code", "msg", "data"]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "未登录、令牌过期或会话撤销",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "403": {
+                        "description": "无权限或来源/CSRF 校验失败",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "404": {
+                        "description": "记录不存在",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "409": {
+                        "description": "版本冲突或受保护的数据",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "422": {
+                        "description": "输入校验失败",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "429": {
+                        "description": "请求过于频繁",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    },
+                    "500": {
+                        "description": "服务暂时不可用",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+                    }
+                },
+                "security": [{ "bearerAuth": [] }]
+            }
+        }
+    },
+    "components": {
+        "securitySchemes": { "bearerAuth": { "type": "http", "scheme": "bearer", "bearerFormat": "JWT" } },
+        "schemas": {
+            "AccessRequest": {
+                "type": "object",
+                "properties": {
+                    "name": { "type": "string", "pattern": "^[a-z][a-z0-9_.-]*$", "maxLength": 100 },
+                    "version": { "type": "integer", "minimum": 0 },
+                    "permissionIds": {
+                        "type": "array",
+                        "items": { "type": "integer" },
+                        "maxItems": 500,
+                        "uniqueItems": true
+                    }
+                },
+                "required": ["name", "version"],
+                "title": "AccessRequest"
+            },
+            "ApiError": {
+                "type": "object",
+                "properties": {
+                    "code": { "type": "string" },
+                    "msg": { "type": "string" },
+                    "data": { "type": "null" },
+                    "errors": {
+                        "type": ["object", "null"],
+                        "additionalProperties": { "type": "array", "items": { "type": "string" } }
+                    }
+                },
+                "required": ["code", "msg", "data"],
+                "title": "ApiError"
+            },
+            "AuditPage": {
+                "type": "object",
+                "properties": {
+                    "records": { "type": "array", "items": { "$ref": "#/components/schemas/AuditRecord" } },
+                    "total": { "type": "integer" },
+                    "page": { "type": "integer" },
+                    "pageSize": { "type": "integer" }
+                },
+                "required": ["records", "total", "page", "pageSize"],
+                "title": "AuditPage"
+            },
+            "AuditRecord": {
+                "type": "object",
+                "properties": {
+                    "id": { "type": "integer" },
+                    "request_id": { "type": "string", "format": "uuid" },
+                    "actor_id": { "type": ["integer", "null"] },
+                    "actor_name": { "type": ["string", "null"] },
+                    "action": { "type": "string" },
+                    "target_id": { "type": ["string", "null"] },
+                    "result": { "type": "string", "enum": ["success", "failure"] },
+                    "status_code": { "type": "integer" },
+                    "error_code": { "type": ["string", "null"] },
+                    "details": { "type": "object", "additionalProperties": true },
+                    "occurred_at": { "type": "string" }
+                },
+                "required": [
+                    "id",
+                    "request_id",
+                    "actor_id",
+                    "actor_name",
+                    "action",
+                    "target_id",
+                    "result",
+                    "status_code",
+                    "error_code",
+                    "details",
+                    "occurred_at"
+                ],
+                "title": "AuditRecord"
+            },
+            "Dashboard": {
+                "type": "object",
+                "properties": {
+                    "metrics": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "key": { "type": "string", "enum": ["users", "roles", "permissions", "menus"] },
+                                "value": { "type": "integer" }
+                            },
+                            "required": ["key", "value"]
+                        }
+                    },
+                    "canAudit": { "type": "boolean" },
+                    "trend": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "date": { "type": "string", "format": "date" },
+                                "success": { "type": "integer" },
+                                "failure": { "type": "integer" }
+                            },
+                            "required": ["date", "success", "failure"]
+                        }
+                    },
+                    "recent": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "id": { "type": "integer" },
+                                "actor_name": { "type": ["string", "null"] },
+                                "action": { "type": "string" },
+                                "result": { "type": "string", "enum": ["success", "failure"] },
+                                "occurred_at": { "type": "string" }
+                            },
+                            "required": ["id", "actor_name", "action", "result", "occurred_at"]
+                        }
+                    },
+                    "generatedAt": { "type": "string", "format": "date-time" }
+                },
+                "required": ["metrics", "canAudit", "trend", "recent", "generatedAt"],
+                "title": "Dashboard"
+            },
+            "Identity": {
+                "type": "object",
+                "properties": {
+                    "userId": { "type": "string" },
+                    "userName": { "type": "string" },
+                    "email": { "type": "string", "format": "email" },
+                    "roles": { "type": "array", "items": { "type": "string" } },
+                    "buttons": { "type": "array", "items": { "type": "string" } },
+                    "accessVersion": { "type": "integer" }
+                },
+                "required": ["userId", "userName", "email", "roles", "buttons", "accessVersion"],
+                "title": "Identity"
+            },
+            "LoginRequest": {
+                "type": "object",
+                "properties": {
+                    "email": { "type": "string", "format": "email", "maxLength": 255 },
+                    "password": { "type": "string", "maxLength": 255 },
+                    "client": { "type": "string", "enum": ["web", "desktop"] }
+                },
+                "required": ["email", "password", "client"],
+                "title": "LoginRequest"
+            },
+            "MenuPage": {
+                "type": "object",
+                "properties": {
+                    "records": { "type": "array", "items": { "$ref": "#/components/schemas/MenuRecord" } },
+                    "total": { "type": "integer" },
+                    "page": { "type": "integer" },
+                    "pageSize": { "type": "integer" },
+                    "version": { "type": "integer" }
+                },
+                "required": ["records", "total", "page", "pageSize", "version"],
+                "title": "MenuPage"
+            },
+            "MenuRecord": {
+                "type": "object",
+                "properties": {
+                    "id": { "type": "integer" },
+                    "name": { "type": "string" },
+                    "title": { "type": "string" },
+                    "path": { "type": "string" },
+                    "component": { "type": "string" },
+                    "parent_id": { "type": ["integer", "null"] },
+                    "permission": { "type": ["string", "null"] },
+                    "icon": { "type": "string" },
+                    "sort": { "type": "integer" },
+                    "enabled": { "type": ["integer", "boolean"] },
+                    "children": { "type": "array", "items": { "$ref": "#/components/schemas/MenuRecord" } },
+                    "created_at": { "type": ["string", "null"] },
+                    "updated_at": { "type": ["string", "null"] }
+                },
+                "required": [
+                    "id",
+                    "name",
+                    "title",
+                    "path",
+                    "component",
+                    "parent_id",
+                    "permission",
+                    "icon",
+                    "sort",
+                    "enabled"
+                ],
+                "title": "MenuRecord"
+            },
+            "MenuRequest": {
+                "type": "object",
+                "properties": {
+                    "name": { "type": "string", "pattern": "^[a-z][a-z0-9_-]*$", "maxLength": 100 },
+                    "title": { "type": "string", "maxLength": 100 },
+                    "path": { "type": "string", "pattern": "~^/[a-z][a-z0-9/_-]*$~", "maxLength": 200 },
+                    "component": {
+                        "type": "string",
+                        "enum": ["group", "users", "roles", "permissions", "menus", "audit", "docs"]
+                    },
+                    "parent_id": { "type": ["integer", "null"] },
+                    "permission": { "type": ["string", "null"] },
+                    "icon": { "type": "string", "maxLength": 100 },
+                    "sort": { "type": "integer", "minimum": 0, "maximum": 10000 },
+                    "enabled": { "type": "boolean" },
+                    "version": { "type": "integer", "minimum": 0 }
+                },
+                "required": ["name", "title", "path", "component", "icon", "sort", "enabled", "version"],
+                "title": "MenuRequest"
+            },
+            "Navigation": {
+                "type": "object",
+                "properties": {
+                    "routes": { "type": "array", "items": { "$ref": "#/components/schemas/NavigationRoute" } },
+                    "home": { "type": "string" }
+                },
+                "required": ["routes", "home"],
+                "title": "Navigation"
+            },
+            "NavigationRoute": {
+                "type": "object",
+                "properties": {
+                    "name": { "type": "string" },
+                    "path": { "type": "string" },
+                    "component": { "type": "string" },
+                    "meta": { "type": "object", "additionalProperties": true },
+                    "children": { "type": "array", "items": { "$ref": "#/components/schemas/NavigationRoute" } }
+                },
+                "required": ["name", "path", "component", "meta"],
+                "title": "NavigationRoute"
+            },
+            "PermissionPage": {
+                "type": "object",
+                "properties": {
+                    "records": { "type": "array", "items": { "$ref": "#/components/schemas/PermissionRecord" } },
+                    "total": { "type": "integer" },
+                    "page": { "type": "integer" },
+                    "pageSize": { "type": "integer" },
+                    "version": { "type": "integer" }
+                },
+                "required": ["records", "total", "page", "pageSize", "version"],
+                "title": "PermissionPage"
+            },
+            "PermissionRecord": {
+                "type": "object",
+                "properties": {
+                    "id": { "type": "integer" },
+                    "name": { "type": "string" },
+                    "guard_name": { "type": "string" },
+                    "created_at": { "type": ["string", "null"] },
+                    "updated_at": { "type": ["string", "null"] }
+                },
+                "required": ["id", "name", "guard_name", "created_at", "updated_at"],
+                "title": "PermissionRecord"
+            },
+            "RolePage": {
+                "type": "object",
+                "properties": {
+                    "records": { "type": "array", "items": { "$ref": "#/components/schemas/RoleRecord" } },
+                    "total": { "type": "integer" },
+                    "page": { "type": "integer" },
+                    "pageSize": { "type": "integer" },
+                    "version": { "type": "integer" }
+                },
+                "required": ["records", "total", "page", "pageSize", "version"],
+                "title": "RolePage"
+            },
+            "RoleRecord": {
+                "type": "object",
+                "properties": {
+                    "id": { "type": "integer" },
+                    "name": { "type": "string" },
+                    "guard_name": { "type": "string" },
+                    "permissionIds": { "type": "array", "items": { "type": "integer" } },
+                    "created_at": { "type": ["string", "null"] },
+                    "updated_at": { "type": ["string", "null"] }
+                },
+                "required": ["id", "name", "guard_name", "permissionIds", "created_at", "updated_at"],
+                "title": "RoleRecord"
+            },
+            "Saved": {
+                "type": "object",
+                "properties": { "id": { "type": "integer" }, "version": { "type": "integer" } },
+                "required": ["id", "version"],
+                "title": "Saved"
+            },
+            "SavedMenu": {
+                "type": "object",
+                "properties": { "id": { "type": "integer" } },
+                "required": ["id"],
+                "title": "SavedMenu"
+            },
+            "Tokens": {
+                "type": "object",
+                "properties": {
+                    "token": { "type": "string" },
+                    "refreshToken": {
+                        "type": "string",
+                        "description": "仅 desktop 客户端返回；Web 使用 HttpOnly Cookie"
+                    },
+                    "csrfToken": { "type": "string" },
+                    "expiresIn": { "type": "integer", "description": "访问令牌有效期，单位秒" }
+                },
+                "required": ["token", "csrfToken", "expiresIn"],
+                "title": "Tokens"
+            },
+            "UserPage": {
+                "type": "object",
+                "properties": {
+                    "records": { "type": "array", "items": { "$ref": "#/components/schemas/UserRecord" } },
+                    "total": { "type": "integer" },
+                    "page": { "type": "integer" },
+                    "pageSize": { "type": "integer" },
+                    "version": { "type": "integer" }
+                },
+                "required": ["records", "total", "page", "pageSize", "version"],
+                "title": "UserPage"
+            },
+            "UserRecord": {
+                "type": "object",
+                "properties": {
+                    "id": { "type": "integer" },
+                    "name": { "type": "string" },
+                    "email": { "type": "string" },
+                    "enabled": { "type": "boolean" },
+                    "roleIds": { "type": "array", "items": { "type": "integer" } },
+                    "roleNames": { "type": "array", "items": { "type": "string" } }
+                },
+                "required": ["id", "name", "email", "enabled", "roleIds", "roleNames"],
+                "title": "UserRecord"
+            },
+            "UserRequest": {
+                "type": "object",
+                "properties": {
+                    "name": { "type": "string", "maxLength": 100 },
+                    "email": { "type": "string", "format": "email", "maxLength": 255 },
+                    "password": { "type": "string", "minLength": 12, "maxLength": 128 },
+                    "enabled": { "type": "boolean" },
+                    "roleIds": {
+                        "type": "array",
+                        "items": { "type": "integer" },
+                        "maxItems": 100,
+                        "uniqueItems": true
+                    },
+                    "version": { "type": "integer", "minimum": 0 }
+                },
+                "required": ["name", "email", "password", "enabled", "version"],
+                "title": "UserRequest"
+            }
+        },
+        "responses": {
+            "ValidationException": {
+                "description": "Validation error",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "message": { "type": "string", "description": "Errors overview." },
+                                "errors": {
+                                    "type": "object",
+                                    "description": "A detailed description of each field that failed validation.",
+                                    "additionalProperties": { "type": "array", "items": { "type": "string" } }
+                                }
+                            },
+                            "required": ["message", "errors"]
+                        }
+                    }
+                }
+            },
+            "AuthorizationException": {
+                "description": "Authorization error",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "type": "object",
+                            "properties": { "message": { "type": "string", "description": "Error overview." } },
+                            "required": ["message"]
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

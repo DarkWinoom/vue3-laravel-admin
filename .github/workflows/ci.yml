@@ -75,8 +75,13 @@ jobs:
       - name: Native UI test
         if: runner.os != 'Linux'
         run: node scripts/native-e2e.mjs
-      - name: Signed update and installer test (Windows)
-        if: runner.os == 'Windows'
+      - name: Signed update and installer test (Linux)
+        if: runner.os == 'Linux'
+        run: xvfb-run -a node scripts/update-e2e.mjs
+        env:
+          WEBKIT_DISABLE_DMABUF_RENDERER: '1'
+      - name: Signed update and installer test
+        if: runner.os != 'Linux'
         run: node scripts/update-e2e.mjs
       - name: Production packages
         run: node scripts/desktop.mjs build --bundles ${{ matrix.bundles }}

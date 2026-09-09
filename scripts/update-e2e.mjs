@@ -3,6 +3,8 @@ import {
   mkdtempSync,
   readFileSync,
   copyFileSync,
+  cpSync,
+  chmodSync,
   readdirSync,
   existsSync,
   rmSync,
@@ -16,7 +18,8 @@ import path from 'node:path';
 import assert from 'node:assert/strict';
 import { root } from './env.mjs';
 
-if (process.platform !== 'win32') throw new Error('This installer fixture currently targets Windows NSIS');
+const platform = process.platform === 'win32' ? 'windows' : process.platform === 'darwin' ? 'darwin' : 'linux';
+const platformKey = platform + '-' + (process.arch === 'arm64' ? 'aarch64' : 'x86_64');
 const temporary = mkdtempSync(path.join(os.tmpdir(), 'vue3-update-'));
 const installDirectory = path.join(temporary, 'installed');
 const children = [];
@@ -104,13 +107,32 @@ try {
     DESKTOP_E2E_INSTALL_DIRECTORY: installDirectory
   };
   const build = ['scripts/desktop.mjs', 'build', '--mode', 'testing', '--debug', '--features', 'desktop-e2e'];
-  run([...build, '--no-bundle'], { ...env, DESKTOP_E2E_VERSION: '0.1.0' });
-  const original = path.join(temporary, 'vue3-laravel-admin.exe');
-  copyFileSync(path.join(root, 'frontend/src-tauri/target/debug/vue3-laravel-admin.exe'), original);
-  run([...build, '--release', '--bundles', 'nsis'], { ...env, DESKTOP_E2E_VERSION: '0.1.1' });
-  const installer = files(path.join(root, 'frontend/src-tauri/target/debug/bundle/nsis')).find(
-    p => p.endsWith('.exe') && path.basename(p).includes('0.1.1')
-  );
+  const bundleKind = platform === 'windows' ? 'nsis' : platform === 'darwin' ? 'app' : 'appimage';
+  const bundleRoot = path.join(root, 'frontend/src-tauri/target/debug/bundle');
+  const originalArgs = platform === 'windows' ? ['--no-bundle'] : ['--bundles', bundleKind];
+  run([...build, ...originalArgs], { ...env, DESKTOP_E2E_VERSION: '0.1.0' });
+  let original;
+  if (platform === 'windows') {
+    original = path.join(temporary, 'vue3-laravel-admin.exe');
+    copyFileSync(path.join(root, 'frontend/src-tauri/target/debug/vue3-laravel-admin.exe'), original);
+  } else if (platform === 'darwin') {
+    const app = readdirSync(path.join(bundleRoot, 'macos')).find(p => p.endsWith('.app'));
+    assert.ok(app);
+    cpSync(path.join(bundleRoot, 'macos', app), path.join(installDirectory, app), { recursive: true });
+    const executables = path.join(installDirectory, app, 'Contents/MacOS');
+    original = path.join(executables, readdirSync(executables)[0]);
+  } else {
+    const image = files(path.join(bundleRoot, 'appimage')).find(p => p.endsWith('.AppImage') && p.includes('0.1.0'));
+    assert.ok(image);
+    original = path.join(temporary, 'admin-test.AppImage');
+    copyFileSync(image, original);
+    chmodSync(original, 0o755);
+  }
+  run([...build, '--release', '--bundles', bundleKind], { ...env, DESKTOP_E2E_VERSION: '0.1.1' });
+  const updaterExtension = platform === 'windows' ? '.exe' : platform === 'darwin' ? '.app.tar.gz' : '.AppImage';
+  const installer = files(
+    path.join(bundleRoot, platform === 'windows' ? 'nsis' : platform === 'darwin' ? 'macos' : 'appimage')
+  ).find(p => p.endsWith(updaterExtension) && (platform === 'darwin' || p.includes('0.1.1')));
   assert.ok(installer, 'Signed test installer missing');
   payload = readFileSync(installer);
   signature = readFileSync(installer + '.sig', 'utf8').trim();
@@ -122,7 +144,7 @@ try {
         JSON.stringify({
           version: '0.1.1',
           notes: 'Isolated updater acceptance fixture',
-          platforms: { 'windows-x86_64': { signature, url: 'http://127.0.0.1:8022/update.exe' } }
+          platforms: { [platformKey]: { signature, url: 'http://127.0.0.1:8022/update.exe' } }
         })
       );
     } else if (request.url === '/update.exe' && responseMode !== 'missing') {
@@ -137,7 +159,11 @@ try {
   });
   await new Promise(resolve => server.listen(8022, '127.0.0.1', resolve));
   children.push(
-    spawn(original, [], { env: { ...process.env, TAURI_WEBDRIVER_PORT: '4445' }, windowsHide: true, stdio: 'ignore' })
+    spawn(original, [], {
+      env: { ...process.env, TAURI_WEBDRIVER_PORT: '4445', APPIMAGE_EXTRACT_AND_RUN: '1' },
+      windowsHide: true,
+      stdio: 'ignore'
+    })
   );
   await attach();
   await showUpdates();
@@ -161,11 +187,20 @@ try {
   assert.ok(!existsSync(path.join(installDirectory, 'vue3-laravel-admin.exe')));
   responseMode = 'valid';
   await click('下载并安装');
-  await wait(
-    () => existsSync(path.join(installDirectory, 'vue3-laravel-admin.exe')),
-    'Valid signed update did not install',
-    120000
-  );
+  if (platform === 'windows') {
+    await wait(
+      () => existsSync(path.join(installDirectory, 'vue3-laravel-admin.exe')),
+      'Valid signed update did not install',
+      120000
+    );
+  } else {
+    await wait(
+      async () => (await bodyText()).includes('更新已安装，请重启应用。'),
+      'Valid signed update did not install',
+      120000
+    );
+    await click('重启完成更新');
+  }
   await wait(() => children[0].exitCode !== null, 'Previous app did not exit after installing');
   session = null;
   await attach();
@@ -175,7 +210,7 @@ try {
     'Updated app did not restart with new version'
   );
   console.log(
-    'Windows updater verified: download failure, tamper rejection, signed 0.1.0 to 0.1.1 install and restart.'
+    platform + ' updater verified: download failure, tamper rejection, signed 0.1.0 to 0.1.1 install and restart.'
   );
 } catch (error) {
   if (session)
@@ -186,21 +221,28 @@ try {
     } catch {}
   throw error;
 } finally {
-  if (session) await command('DELETE', '/session/' + session).catch(() => {});
+  if (session) {
+    await evaluate("window.__TAURI_INTERNALS__.invoke('plugin:process|exit', {code:0}); return true;").catch(() => {});
+    session = null;
+  }
   for (const child of children)
-    if (child.pid) spawnSync('taskkill', ['/pid', String(child.pid), '/T', '/F'], { stdio: 'ignore' });
-  // Only processes executing this fixture's isolated installed binary may be stopped.
-  const installed = path.join(installDirectory, 'vue3-laravel-admin.exe');
-  const escaped = installed.replaceAll("'", "''");
-  spawnSync(
-    'powershell.exe',
-    ['-NoProfile', '-Command', "Get-Process | Where-Object { $_.Path -eq '" + escaped + "' } | Stop-Process -Force"],
-    { stdio: 'ignore', windowsHide: true }
-  );
-  const uninstaller = existsSync(installDirectory)
-    ? files(installDirectory).find(p => /uninstall.*\.exe$/i.test(p))
-    : null;
-  if (uninstaller) spawnSync(uninstaller, ['/S'], { stdio: 'ignore', windowsHide: true });
+    if (child.pid) {
+      if (platform === 'windows') spawnSync('taskkill', ['/pid', String(child.pid), '/T', '/F'], { stdio: 'ignore' });
+      else child.kill('SIGTERM');
+    }
+  if (platform === 'windows') {
+    const installed = path.join(installDirectory, 'vue3-laravel-admin.exe');
+    const escaped = installed.replaceAll("'", "''");
+    spawnSync(
+      'powershell.exe',
+      ['-NoProfile', '-Command', "Get-Process | Where-Object { $_.Path -eq '" + escaped + "' } | Stop-Process -Force"],
+      { stdio: 'ignore', windowsHide: true }
+    );
+    const uninstaller = existsSync(installDirectory)
+      ? files(installDirectory).find(p => /uninstall.*\.exe$/i.test(p))
+      : null;
+    if (uninstaller) spawnSync(uninstaller, ['/S'], { stdio: 'ignore', windowsHide: true });
+  }
   if (server) await new Promise(resolve => server.close(resolve));
   await new Promise(resolve => setTimeout(resolve, 1500));
   if (path.dirname(temporary) !== os.tmpdir() || !path.basename(temporary).startsWith('vue3-update-'))

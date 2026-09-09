@@ -44,7 +44,7 @@ if (e2e) {
 if (e2e)
   config.app.security.capabilities = [
     'default',
-    { identifier: 'desktop-e2e', windows: ['main'], permissions: ['wdio-webdriver:default'] }
+    { identifier: 'desktop-e2e', windows: ['main'], permissions: ['wdio-webdriver:default', 'process:allow-exit'] }
   ];
 const buildEnvironment = { ...process.env, ...env };
 for (const key of Object.keys(buildEnvironment))

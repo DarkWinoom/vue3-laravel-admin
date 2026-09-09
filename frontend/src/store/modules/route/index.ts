@@ -12,6 +12,7 @@ import { ROOT_ROUTE } from '@/router/routes/builtin';
 import { getRouteName, getRoutePath } from '@/router/elegant/transform';
 import { useAuthStore } from '../auth';
 import { useTabStore } from '../tab';
+import { createRouteRegistry } from './registry';
 import {
   filterAuthRoutesByRoles,
   getBreadcrumbsByRoute,
@@ -77,7 +78,7 @@ export const useRouteStore = defineStore(SetupStoreId.Route, () => {
     authRoutes.value = Array.from(authRoutesMap.values());
   }
 
-  const removeRouteFns: (() => void)[] = [];
+  const registry = createRouteRegistry(router);
 
   /** Global menus */
   const menus = ref<App.Global.Menu[]>([]);
@@ -137,16 +138,11 @@ export const useRouteStore = defineStore(SetupStoreId.Route, () => {
 
     routeStore.$reset();
 
-    resetVueRoutes();
+    authRoutes.value = [];
+    registry.clearAuthRoutes();
 
     // after reset store, need to re-init constant route
     await initConstantRoute();
-  }
-
-  /** Reset vue routes */
-  function resetVueRoutes() {
-    removeRouteFns.forEach(fn => fn());
-    removeRouteFns.length = 0;
   }
 
   /** init constant route */
@@ -157,6 +153,7 @@ export const useRouteStore = defineStore(SetupStoreId.Route, () => {
 
     addConstantRoutes(staticRoute.constantRoutes);
 
+    registry.installConstants(getAuthVueRoutes(sortRoutesByOrder(constantRoutes.value)));
     handleConstantAndAuthRoutes();
 
     setIsInitConstantRoute(true);
@@ -229,35 +226,11 @@ export const useRouteStore = defineStore(SetupStoreId.Route, () => {
 
     const vueRoutes = getAuthVueRoutes(sortRoutes);
 
-    resetVueRoutes();
-
-    addRoutesToVueRouter(vueRoutes);
+    registry.replaceAuthRoutes(getAuthVueRoutes(sortRoutesByOrder(authRoutes.value)));
 
     getGlobalMenus(sortRoutes);
 
     getCacheRoutes(vueRoutes);
-  }
-
-  /**
-   * Add routes to vue router
-   *
-   * @param routes Vue routes
-   */
-  function addRoutesToVueRouter(routes: RouteRecordRaw[]) {
-    routes.forEach(route => {
-      const removeFn = router.addRoute(route);
-      // Login and error pages must remain resolvable while session resets overlap navigation.
-      if (!route.meta?.constant) addRemoveRouteFn(removeFn);
-    });
-  }
-
-  /**
-   * Add remove route fn
-   *
-   * @param fn
-   */
-  function addRemoveRouteFn(fn: () => void) {
-    removeRouteFns.push(fn);
   }
 
   /**

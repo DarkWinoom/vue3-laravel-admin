@@ -2,7 +2,7 @@
 import { watch } from 'vue';
 import { useEcharts } from '@/hooks/common/echarts';
 import type { ECOption } from '@/hooks/common/echarts';
-import type { DashboardData } from '../use-dashboard';
+import type { DashboardData } from './use-dashboard';
 
 const props = defineProps<{ data: DashboardData['trend'] }>();
 const { domRef, updateOptions } = useEcharts(

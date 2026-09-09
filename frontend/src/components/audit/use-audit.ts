@@ -1,12 +1,21 @@
-import { h, reactive, ref } from 'vue';
+import { h, reactive, ref, shallowRef } from 'vue';
 import { NButton, NTag } from 'naive-ui';
 import { request } from '@/service/request';
 import { useNaivePaginatedTable } from '@/hooks/common/table';
 
 export type AuditRow = import('@/service/api/openapi').components['schemas']['AuditRecord'];
 
+export interface AuditFilters {
+  actor: string;
+  action: string;
+  result: string | null;
+  requestId: string;
+  dateFrom: string | null;
+  dateTo: string | null;
+}
+
 export function useAudit() {
-  const filters = reactive({
+  const filters = ref<AuditFilters>({
     actor: '',
     action: '',
     result: null as string | null,
@@ -15,7 +24,7 @@ export function useAudit() {
     dateTo: null as string | null
   });
   const params = reactive({ page: 1, pageSize: 10 });
-  const failed = ref(false);
+  const failed = shallowRef(false);
   const selected = ref<AuditRow | null>(null);
   const table = useNaivePaginatedTable({
     api: () =>
@@ -23,7 +32,7 @@ export function useAudit() {
         url: '/audit-logs',
         params: {
           ...params,
-          ...Object.fromEntries(Object.entries(filters).filter(([, value]) => value !== '' && value !== null))
+          ...Object.fromEntries(Object.entries(filters.value).filter(([, value]) => value !== '' && value !== null))
         }
       }),
     transform: result => {
@@ -76,7 +85,7 @@ export function useAudit() {
     ]
   });
   async function reset() {
-    Object.assign(filters, { actor: '', action: '', result: null, requestId: '', dateFrom: null, dateTo: null });
+    Object.assign(filters.value, { actor: '', action: '', result: null, requestId: '', dateFrom: null, dateTo: null });
     await table.getDataByPage(1);
   }
   return { ...table, filters, failed, selected, reset };

@@ -1,12 +1,12 @@
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, shallowRef } from 'vue';
 import { request } from '@/service/request';
 
 export type DashboardData = import('@/service/api/openapi').components['schemas']['Dashboard'];
 
 export function useDashboard() {
   const data = ref<DashboardData | null>(null);
-  const loading = ref(false);
-  const failed = ref(false);
+  const loading = shallowRef(false);
+  const failed = shallowRef(false);
   async function refresh() {
     loading.value = true;
     try {

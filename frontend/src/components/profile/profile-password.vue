@@ -3,6 +3,7 @@ import { reactive, shallowRef } from 'vue';
 import { useAuthStore } from '@/store/modules/auth';
 import { request } from '@/service/request';
 import { useNaiveForm } from '@/hooks/common/form';
+import ProfileSection from './profile-section.vue';
 const auth = useAuthStore();
 const { formRef, validate } = useNaiveForm();
 const saving = shallowRef(false);
@@ -37,15 +38,9 @@ async function save() {
 </script>
 
 <template>
-  <div class="px-8px py-20px sm:px-24px">
-    <div class="mb-24px flex items-start gap-12px">
-      <div class="flex-center rd-8px bg-primary/10 p-12px text-primary"><icon-ic-round-lock class="text-24px" /></div>
-      <div>
-        <h3 class="text-16px font-medium">修改登录密码</h3>
-        <p class="mt-8px text-14px text-#999">修改密码后，所有已登录会话将退出</p>
-      </div>
-    </div>
-    <NForm ref="formRef" :model="model" :rules="rules" label-placement="top" class="max-w-560px" @submit.prevent="save">
+  <NForm ref="formRef" :model="model" :rules="rules" label-placement="top" class="profile-form" @submit.prevent="save">
+    <ProfileSection title="修改登录密码" subtitle="修改后，所有会话将退出登录">
+      <template #icon><icon-ic-round-lock /></template>
       <NFormItem label="当前密码" path="currentPassword">
         <NInput
           v-model:value="model.currentPassword"
@@ -73,9 +68,9 @@ async function save() {
           :input-props="{ autocomplete: 'new-password' }"
         />
       </NFormItem>
-      <NFormItem :show-label="false">
+      <template #actions>
         <NButton type="primary" attr-type="submit" :loading="saving">更新密码</NButton>
-      </NFormItem>
-    </NForm>
-  </div>
+      </template>
+    </ProfileSection>
+  </NForm>
 </template>

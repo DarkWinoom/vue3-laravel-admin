@@ -44,18 +44,20 @@ const isMixHorizontalMode = computed(() =>
 </template>
 
 <style lang="scss" scoped>
-.setting-list-move,
-.setting-list-enter-active,
-.setting-list-leave-active {
-  --uno: transition-all-300;
-}
+.setting-list {
+  &-move,
+  &-enter-active,
+  &-leave-active {
+    --uno: transition-all-300;
+  }
 
-.setting-list-enter-from,
-.setting-list-leave-to {
-  --uno: opacity-0 -translate-x-30px;
-}
+  &-enter-from,
+  &-leave-to {
+    --uno: opacity-0 -translate-x-30px;
+  }
 
-.setting-list-leave-active {
-  --uno: absolute;
+  &-leave-active {
+    --uno: absolute;
+  }
 }
 </style>

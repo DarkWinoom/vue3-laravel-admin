@@ -64,13 +64,15 @@ const showSiderInverted = computed(() => !themeStore.darkMode && themeStore.layo
 </template>
 
 <style lang="scss" scoped>
-.sider-inverted-enter-active,
-.sider-inverted-leave-active {
-  --uno: h-22px transition-all-300;
-}
+.sider-inverted {
+  &-enter-active,
+  &-leave-active {
+    --uno: h-22px transition-all-300;
+  }
 
-.sider-inverted-enter-from,
-.sider-inverted-leave-to {
-  --uno: translate-x-20px opacity-0 h-0;
+  &-enter-from,
+  &-leave-to {
+    --uno: translate-x-20px opacity-0 h-0;
+  }
 }
 </style>

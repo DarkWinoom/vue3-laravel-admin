@@ -151,10 +151,8 @@
 
 <style lang="scss" scoped>
 .app-logo {
-  --logo-color-300: rgb(var(--primary-300-color));
-  --logo-color-400: rgb(var(--primary-400-color));
-  --logo-color-500: rgb(var(--primary-500-color));
-  --logo-color-600: rgb(var(--primary-600-color));
-  --logo-color-700: rgb(var(--primary-700-color));
+  @each $level in 300, 400, 500, 600, 700 {
+    --logo-color-#{$level}: rgb(var(--primary-#{$level}-color));
+  }
 }
 </style>

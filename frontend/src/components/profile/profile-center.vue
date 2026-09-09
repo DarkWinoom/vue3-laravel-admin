@@ -33,22 +33,24 @@ import ProfilePassword from './profile-password.vue';
   overflow: hidden;
 }
 
-.profile-tabs :deep(.n-tabs-nav) {
-  flex-shrink: 0;
-}
+.profile-tabs {
+  :deep(.n-tabs-nav) {
+    flex-shrink: 0;
+  }
 
-.profile-tabs :deep(.n-tab-pane) {
-  display: flex;
-  flex: 1;
-  min-height: 0;
-  padding: 0;
-}
+  :deep(.n-tab-pane) {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    padding: 0;
+  }
 
-.profile-tabs :deep(.profile-form) {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  min-width: 0;
-  min-height: 0;
+  :deep(.profile-form) {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+  }
 }
 </style>

@@ -62,16 +62,18 @@ const themeStore = useThemeStore();
 </template>
 
 <style lang="scss" scoped>
-.layout-header {
-  --uno: h-16px rd-4px;
-}
+.layout {
+  &-header {
+    --uno: h-16px rd-4px;
+  }
 
-.layout-sider {
-  --uno: bg-primary-300 rd-4px;
-}
+  &-sider {
+    --uno: bg-primary-300 rd-4px;
+  }
 
-.layout-main {
-  --uno: flex-1 bg-primary-200 rd-4px;
+  &-main {
+    --uno: flex-1 bg-primary-200 rd-4px;
+  }
 }
 
 .vertical-wrapper {

@@ -32,85 +32,85 @@ defineProps<{ title: string; subtitle: string }>();
   flex: 1;
   flex-direction: column;
   min-height: 0;
-}
 
-.profile-section__body {
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
-  padding: 32px;
-}
-
-.profile-section__inner,
-.profile-section__actions {
-  width: 100%;
-  margin-inline: auto;
-}
-
-.profile-section__header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 32px;
-}
-
-.profile-section__icon {
-  display: flex;
-  flex: 0 0 48px;
-  align-items: center;
-  justify-content: center;
-  width: 48px;
-  height: 48px;
-  border-radius: 8px;
-  font-size: 26px;
-}
-
-.profile-section__heading {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-}
-
-.profile-section__heading h3,
-.profile-section__heading p {
-  margin: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.profile-section__heading h3 {
-  font-size: 16px;
-  font-weight: 500;
-  line-height: 22px;
-}
-
-.profile-section__heading p {
-  color: rgb(var(--base-text-color) / 0.65);
-  font-size: 14px;
-  line-height: 20px;
-}
-
-.profile-section__footer {
-  flex-shrink: 0;
-  padding: 16px 32px;
-  border-top: 1px solid rgb(var(--base-text-color) / 0.09);
-}
-
-.profile-section__actions {
-  display: flex;
-  justify-content: center;
-  gap: 12px;
-}
-
-@media (max-width: 640px) {
-  .profile-section__body {
-    padding: 24px 16px;
+  &__body {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 32px;
   }
 
-  .profile-section__footer {
-    padding: 16px;
+  &__inner,
+  &__actions {
+    width: 100%;
+    margin-inline: auto;
+  }
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 32px;
+  }
+
+  &__icon {
+    display: flex;
+    flex: 0 0 48px;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 8px;
+    font-size: 26px;
+  }
+
+  &__heading {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+
+    h3,
+    p {
+      margin: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    h3 {
+      font-size: 16px;
+      font-weight: 500;
+      line-height: 22px;
+    }
+
+    p {
+      color: rgb(var(--base-text-color) / 0.65);
+      font-size: 14px;
+      line-height: 20px;
+    }
+  }
+
+  &__footer {
+    flex-shrink: 0;
+    padding: 16px 32px;
+    border-top: 1px solid rgb(var(--base-text-color) / 0.09);
+  }
+
+  &__actions {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+  }
+
+  @media (max-width: 640px) {
+    &__body {
+      padding: 24px 16px;
+    }
+
+    &__footer {
+      padding: 16px;
+    }
   }
 }
 </style>

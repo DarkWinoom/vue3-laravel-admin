@@ -1,11 +1,12 @@
 import { spawn, spawnSync } from 'node:child_process';
-import { existsSync, mkdtempSync, readdirSync, rmSync, cpSync, mkdirSync } from 'node:fs';
+import { existsSync, mkdtempSync, realpathSync, readdirSync, rmSync, cpSync, mkdirSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import assert from 'node:assert/strict';
 import { root } from './env.mjs';
 
-const temporary = mkdtempSync(path.join(os.tmpdir(), 'vue3-package-'));
+const temporaryRoot = realpathSync(os.tmpdir());
+const temporary = mkdtempSync(path.join(temporaryRoot, 'vue3-package-'));
 let app;
 let mounted = false;
 let linuxPackage;
@@ -72,7 +73,7 @@ try {
   }
   if (linuxPackage) run('sudo', ['dpkg', '-r', linuxPackage]);
   await new Promise(resolve => setTimeout(resolve, 1500));
-  if (path.dirname(temporary) !== os.tmpdir() || !path.basename(temporary).startsWith('vue3-package-'))
+  if (path.dirname(temporary) !== temporaryRoot || !path.basename(temporary).startsWith('vue3-package-'))
     throw Error('Unexpected package fixture directory');
   rmSync(temporary, { recursive: true, force: true, maxRetries: 5, retryDelay: 500 });
 }

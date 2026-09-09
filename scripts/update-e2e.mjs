@@ -1,6 +1,7 @@
 import { spawn, spawnSync } from 'node:child_process';
 import {
   mkdtempSync,
+  realpathSync,
   readFileSync,
   copyFileSync,
   cpSync,
@@ -20,7 +21,8 @@ import { root } from './env.mjs';
 
 const platform = process.platform === 'win32' ? 'windows' : process.platform === 'darwin' ? 'darwin' : 'linux';
 const platformKey = platform + '-' + (process.arch === 'arm64' ? 'aarch64' : 'x86_64');
-const temporary = mkdtempSync(path.join(os.tmpdir(), 'vue3-update-'));
+const temporaryRoot = realpathSync(os.tmpdir());
+const temporary = mkdtempSync(path.join(temporaryRoot, 'vue3-update-'));
 const installDirectory = path.join(temporary, 'installed');
 const children = [];
 const driver = 'http://127.0.0.1:4445';
@@ -253,7 +255,7 @@ try {
   }
   if (server) await new Promise(resolve => server.close(resolve));
   await new Promise(resolve => setTimeout(resolve, 1500));
-  if (path.dirname(temporary) !== os.tmpdir() || !path.basename(temporary).startsWith('vue3-update-'))
+  if (path.dirname(temporary) !== temporaryRoot || !path.basename(temporary).startsWith('vue3-update-'))
     throw Error('Unexpected update fixture directory');
   rmSync(temporary, { recursive: true, force: true, maxRetries: 5, retryDelay: 500 });
 }

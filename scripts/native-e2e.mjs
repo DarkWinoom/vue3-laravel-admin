@@ -108,6 +108,15 @@ try {
   assert.ok(session);
   await wait(() => script('return Boolean(window.__TAURI_INTERNALS__);'), 'Tauri WebView did not initialize');
   await wait(() => element('css selector', 'input[placeholder="请输入邮箱"]'), 'Login did not render');
+  await click('连接与更新');
+  await type('input[placeholder="https://admin.example.com"]', 'http://example.com');
+  await click('保存连接');
+  await wait(
+    async () => (await script('return document.body.innerText;')).includes('请输入 HTTPS 服务地址'),
+    'Insecure remote origin was accepted'
+  );
+  await type('input[placeholder="https://admin.example.com"]', 'http://127.0.0.1:8021');
+  await click('保存连接');
   await type('input[placeholder="请输入邮箱"]', 'browser-admin@example.test');
   await type('input[placeholder="请输入密码"]', 'Browser-test-password!');
   await click('登录');
@@ -122,6 +131,10 @@ try {
   await clickXpath("//*[normalize-space(text())='系统管理']");
   await clickXpath("//*[normalize-space(text())='用户管理']");
   await click('新增');
+  await wait(
+    async () => (await script('return document.body.innerText;')).includes('新增用户'),
+    'Create drawer not ready'
+  );
   await type('input[placeholder="请输入用户名"]', 'Native E2E');
   await type('input[placeholder="请输入邮箱"]', 'native-e2e@example.test');
   await type('input[placeholder="请输入至少 12 位密码"]', 'Native-test-password!');
@@ -131,7 +144,11 @@ try {
     'Native create failed'
   );
   await clickXpath("//tr[contains(.,'native-e2e@example.test')]//button[normalize-space(.)='编辑']");
-  await type('input[placeholder="请输入用户名"]', 'Native Updated');
+  await wait(
+    async () => (await script('return document.body.innerText;')).includes('编辑用户'),
+    'Edit drawer not ready'
+  );
+  await type('.n-drawer input[placeholder="请输入用户名"]', 'Native Updated');
   await click('确定');
   await wait(
     async () => (await script('return document.body.innerText;')).includes('Native Updated'),
@@ -155,6 +172,28 @@ try {
     async () => await script("return Boolean(document.querySelector('.swagger-ui'))"),
     'Native Swagger failed'
   );
+  await script(
+    "document.querySelectorAll('button').forEach(b=>{if(b.textContent.trim()==='Browser Admin')b.click()});"
+  );
+  await clickXpath("//*[normalize-space(text())='个人中心']");
+  await wait(
+    async () => (await script('return document.body.innerText;')).includes('维护账户信息与显示名称'),
+    'Native profile unavailable'
+  );
+  await command('POST', '/session/' + session + '/window/rect', { width: 360, height: 640 });
+  await wait(
+    () =>
+      script(
+        "const b=[...document.querySelectorAll('button')].find(b=>b.textContent.trim()==='保存修改');if(!b)return false;const r=b.getBoundingClientRect();return r.top>=0 && r.bottom<=innerHeight && r.right<=innerWidth"
+      ),
+    'Profile save action is inaccessible at minimum width'
+  );
+  await click('保存修改');
+  await wait(
+    async () => (await script('return document.body.innerText;')).includes('个人资料已保存'),
+    'Native profile save failed'
+  );
+  await command('POST', '/session/' + session + '/window/rect', { width: 1366, height: 768 });
   await script(
     "document.querySelectorAll('button').forEach(b=>{if(b.textContent.trim()==='Browser Admin')b.click()});"
   );

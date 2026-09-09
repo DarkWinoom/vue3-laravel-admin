@@ -80,6 +80,14 @@ jobs:
         run: node scripts/update-e2e.mjs
       - name: Production packages
         run: node scripts/desktop.mjs build --bundles ${{ matrix.bundles }}
+      - name: Install and launch production package (Linux)
+        if: runner.os == 'Linux'
+        run: xvfb-run -a node scripts/package-smoke.mjs
+        env:
+          WEBKIT_DISABLE_DMABUF_RENDERER: '1'
+      - name: Install and launch production package
+        if: runner.os != 'Linux'
+        run: node scripts/package-smoke.mjs
       - run: node scripts/collect-artifacts.mjs
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:

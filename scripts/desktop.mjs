@@ -46,6 +46,9 @@ if (e2e)
     'default',
     { identifier: 'desktop-e2e', windows: ['main'], permissions: ['wdio-webdriver:default'] }
   ];
+const buildEnvironment = { ...process.env, ...env };
+for (const key of Object.keys(buildEnvironment))
+  if (key.startsWith('APPLE_') && !buildEnvironment[key]) delete buildEnvironment[key];
 const child = spawn(
   process.execPath,
   [
@@ -55,7 +58,7 @@ const child = spawn(
     JSON.stringify(config),
     ...args
   ],
-  { cwd: path.join(root, 'frontend'), stdio: 'inherit', env: { ...process.env, ...env } }
+  { cwd: path.join(root, 'frontend'), stdio: 'inherit', env: buildEnvironment }
 );
 child.on('error', error => {
   console.error(error.message);

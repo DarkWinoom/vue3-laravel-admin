@@ -106,7 +106,7 @@ try {
   const created = await command('POST', '/session', { capabilities: { alwaysMatch: { browserName: 'tauri' } } });
   session = created.sessionId;
   assert.ok(session);
-  assert.equal(await script('return Boolean(window.__TAURI_INTERNALS__);'), true);
+  await wait(() => script('return Boolean(window.__TAURI_INTERNALS__);'), 'Tauri WebView did not initialize');
   await wait(() => element('css selector', 'input[placeholder="请输入邮箱"]'), 'Login did not render');
   await type('input[placeholder="请输入邮箱"]', 'browser-admin@example.test');
   await type('input[placeholder="请输入密码"]', 'Browser-test-password!');

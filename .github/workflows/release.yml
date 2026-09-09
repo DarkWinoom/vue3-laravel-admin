@@ -60,6 +60,7 @@ jobs:
         with:
           name: signed-${{ matrix.name }}
           path: .release-artifacts/
+          include-hidden-files: true
           if-no-files-found: error
   draft:
     needs: build

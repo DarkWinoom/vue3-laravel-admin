@@ -24,6 +24,12 @@ const { config, env } = desktopConfig({
   signing: process.env,
   ...appSettings()
 });
+if (e2e) {
+  config.identifier += '.e2e';
+  config.productName += ' Test';
+  config.app.windows[0].title = config.productName;
+  env.VITE_APP_TITLE = config.productName;
+}
 if (e2e)
   config.app.security.capabilities = [
     'default',

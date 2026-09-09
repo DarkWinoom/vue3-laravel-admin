@@ -111,6 +111,10 @@ async function initRoute(to: RouteLocationNormalized): Promise<RouteLocationRaw 
     // initialize the auth route
     await routeStore.initAuthRoute();
 
+    if (!authStore.isLogin) {
+      return { name: 'login', query: getRouteQueryOfLoginRoute(to, routeStore.routeHome) };
+    }
+
     // the route is captured by the "not-found" route because the auth route is not initialized
     // after the auth route is initialized, redirect to the original route
     if (isNotFoundRoute) {

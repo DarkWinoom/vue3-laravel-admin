@@ -214,7 +214,7 @@ export const useRouteStore = defineStore(SetupStoreId.Route, () => {
       setIsInitAuthRoute(true);
     } else {
       // if fetch user routes failed, reset store
-      authStore.resetStore();
+      await authStore.resetStore();
     }
   }
 
@@ -243,7 +243,8 @@ export const useRouteStore = defineStore(SetupStoreId.Route, () => {
   function addRoutesToVueRouter(routes: RouteRecordRaw[]) {
     routes.forEach(route => {
       const removeFn = router.addRoute(route);
-      addRemoveRouteFn(removeFn);
+      // Login and error pages must remain resolvable while session resets overlap navigation.
+      if (!route.meta?.constant) addRemoveRouteFn(removeFn);
     });
   }
 

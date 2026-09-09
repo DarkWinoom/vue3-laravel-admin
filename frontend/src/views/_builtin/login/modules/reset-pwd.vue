@@ -79,4 +79,4 @@ async function handleSubmit() {
   </NForm>
 </template>
 
-<style scoped></style>
+<style lang="scss" scoped></style>

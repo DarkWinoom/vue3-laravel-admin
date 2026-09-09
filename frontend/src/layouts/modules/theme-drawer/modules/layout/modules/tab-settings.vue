@@ -44,7 +44,7 @@ const themeStore = useThemeStore();
   </TransitionGroup>
 </template>
 
-<style scoped>
+<style lang="scss" scoped>
 .setting-list-move,
 .setting-list-enter-active,
 .setting-list-leave-active {

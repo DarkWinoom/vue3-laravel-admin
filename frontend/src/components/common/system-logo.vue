@@ -149,7 +149,7 @@
   </div>
 </template>
 
-<style scoped>
+<style lang="scss" scoped>
 .app-logo {
   --logo-color-300: rgb(var(--primary-300-color));
   --logo-color-400: rgb(var(--primary-400-color));

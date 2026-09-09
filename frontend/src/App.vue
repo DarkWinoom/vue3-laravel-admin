@@ -55,4 +55,4 @@ const watermarkProps = computed<WatermarkProps>(() => {
   </NConfigProvider>
 </template>
 
-<style scoped></style>
+<style lang="scss" scoped></style>

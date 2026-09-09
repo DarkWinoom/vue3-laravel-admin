@@ -13,6 +13,7 @@
     "Use a dedicated development mode with configurable host and port",
     "Read root environment files for development, testing and production; keep standalone examples",
     "Adapt management list, search, drawer and modal layouts from the pinned example reference commit",
-    "Use example management route grouping and icons; retain Chinese only and remove language switching"
+    "Use example management route grouping and icons; retain Chinese only and remove language switching",
+    "Use SCSS for Vue style blocks and generated page templates"
   ]
 }

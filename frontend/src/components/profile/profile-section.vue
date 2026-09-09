@@ -7,7 +7,9 @@ defineProps<{ title: string; subtitle: string }>();
     <div class="profile-section__body">
       <div class="profile-section__inner">
         <header class="profile-section__header">
-          <div class="profile-section__icon bg-primary/10 text-primary" aria-hidden="true"><slot name="icon" /></div>
+          <div class="profile-section__icon bg-primary/10 text-primary" aria-hidden="true">
+            <slot name="icon" />
+          </div>
           <div class="profile-section__heading">
             <h3 :title="title">{{ title }}</h3>
             <p :title="subtitle">{{ subtitle }}</p>
@@ -17,12 +19,14 @@ defineProps<{ title: string; subtitle: string }>();
       </div>
     </div>
     <footer class="profile-section__footer bg-container">
-      <div class="profile-section__actions"><slot name="actions" /></div>
+      <div class="profile-section__actions">
+        <slot name="actions" />
+      </div>
     </footer>
   </section>
 </template>
 
-<style scoped>
+<style lang="scss" scoped>
 .profile-section {
   display: flex;
   flex: 1;
@@ -40,7 +44,6 @@ defineProps<{ title: string; subtitle: string }>();
 .profile-section__inner,
 .profile-section__actions {
   width: 100%;
-  max-width: 720px;
   margin-inline: auto;
 }
 
@@ -97,7 +100,7 @@ defineProps<{ title: string; subtitle: string }>();
 
 .profile-section__actions {
   display: flex;
-  justify-content: flex-end;
+  justify-content: center;
   gap: 12px;
 }
 

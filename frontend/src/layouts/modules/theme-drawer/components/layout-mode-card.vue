@@ -98,4 +98,4 @@ function handleChangeMode(mode: UnionKey.ThemeLayoutMode) {
   </div>
 </template>
 
-<style scoped></style>
+<style lang="scss" scoped></style>

@@ -58,4 +58,4 @@ const darkColor = computed(() => getPaletteColorByNumber(props.themeColor, 500))
   </div>
 </template>
 
-<style scoped></style>
+<style lang="scss" scoped></style>

@@ -40,4 +40,4 @@ const icon = computed(() => iconMap[props.type]);
   </div>
 </template>
 
-<style scoped></style>
+<style lang="scss" scoped></style>

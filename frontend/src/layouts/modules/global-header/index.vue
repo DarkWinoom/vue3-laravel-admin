@@ -51,4 +51,4 @@ const { isFullscreen, toggle } = useFullscreen();
   </DarkModeContainer>
 </template>
 
-<style scoped></style>
+<style lang="scss" scoped></style>

@@ -63,7 +63,7 @@ const showSiderInverted = computed(() => !themeStore.darkMode && themeStore.layo
   </div>
 </template>
 
-<style scoped>
+<style lang="scss" scoped>
 .sider-inverted-enter-active,
 .sider-inverted-leave-active {
   --uno: h-22px transition-all-300;

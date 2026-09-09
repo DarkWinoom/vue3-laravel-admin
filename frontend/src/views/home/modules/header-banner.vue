@@ -63,4 +63,4 @@ const statisticData = computed<StatisticData[]>(() => [
   </NCard>
 </template>
 
-<style scoped></style>
+<style lang="scss" scoped></style>

@@ -51,4 +51,4 @@ const renderLocalIcon = computed(() => props.localIcon || !props.icon);
   </template>
 </template>
 
-<style scoped></style>
+<style lang="scss" scoped></style>

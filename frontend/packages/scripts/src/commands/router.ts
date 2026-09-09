@@ -81,7 +81,7 @@ For example:
   <div>${result.routeName}</div>
 </template>
 
-<style scoped></style>
+<style lang="scss" scoped></style>
 `;
 
   const filePath = path.join(routeDir, fileName);

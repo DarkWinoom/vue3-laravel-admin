@@ -37,4 +37,4 @@ const reRenderVertical = computed(() => themeStore.layout.mode === 'vertical' &&
   <component :is="activeMenu" :key="reRenderVertical" />
 </template>
 
-<style scoped></style>
+<style lang="scss" scoped></style>

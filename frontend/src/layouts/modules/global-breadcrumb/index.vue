@@ -44,4 +44,4 @@ function handleClickMenu(key: RouteKey) {
   </NBreadcrumb>
 </template>
 
-<style scoped></style>
+<style lang="scss" scoped></style>

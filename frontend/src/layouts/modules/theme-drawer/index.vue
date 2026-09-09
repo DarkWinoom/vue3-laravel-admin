@@ -53,7 +53,7 @@ const drawerWidth = computed(() => {
   </NDrawer>
 </template>
 
-<style scoped>
+<style lang="scss" scoped>
 :deep(.n-tab) {
   display: flex;
   align-items: center;

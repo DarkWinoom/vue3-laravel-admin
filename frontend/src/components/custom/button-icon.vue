@@ -45,4 +45,4 @@ const DEFAULT_CLASS = 'h-[36px] text-icon';
   </NTooltip>
 </template>
 
-<style scoped></style>
+<style lang="scss" scoped></style>

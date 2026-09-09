@@ -36,4 +36,4 @@ const ContextHolder = defineComponent({
   </NLoadingBarProvider>
 </template>
 
-<style scoped></style>
+<style lang="scss" scoped></style>

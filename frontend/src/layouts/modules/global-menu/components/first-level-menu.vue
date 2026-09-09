@@ -102,7 +102,7 @@ function toggleSiderCollapse() {
   </div>
 </template>
 
-<style scoped>
+<style lang="scss" scoped>
 .selected-mix-menu {
   background-color: v-bind(selectedBgColor);
 }

@@ -143,4 +143,4 @@ function handleDropdown(optionKey: App.Global.DropdownKey) {
   />
 </template>
 
-<style scoped></style>
+<style lang="scss" scoped></style>

@@ -4,4 +4,4 @@
   <ExceptionBase type="500" />
 </template>
 
-<style scoped></style>
+<style lang="scss" scoped></style>

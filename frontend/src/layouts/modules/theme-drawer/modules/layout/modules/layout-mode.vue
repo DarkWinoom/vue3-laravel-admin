@@ -61,7 +61,7 @@ const themeStore = useThemeStore();
   </LayoutModeCard>
 </template>
 
-<style scoped>
+<style lang="scss" scoped>
 .layout-header {
   --uno: h-16px rd-4px;
 }

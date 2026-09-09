@@ -4,4 +4,4 @@
   <ExceptionBase type="403" />
 </template>
 
-<style scoped></style>
+<style lang="scss" scoped></style>

@@ -42,7 +42,7 @@ const isHybridLayoutMode = computed(() => layoutMode.value.includes('hybrid'));
   </TransitionGroup>
 </template>
 
-<style scoped>
+<style lang="scss" scoped>
 .setting-list-move,
 .setting-list-enter-active,
 .setting-list-leave-active {

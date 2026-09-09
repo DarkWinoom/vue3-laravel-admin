@@ -23,4 +23,4 @@ const icon = computed(() => (props.pin ? 'mdi-pin-off' : 'mdi-pin'));
   </ButtonIcon>
 </template>
 
-<style scoped></style>
+<style lang="scss" scoped></style>

@@ -81,4 +81,4 @@ const swatches: string[] = [
   </div>
 </template>
 
-<style scoped></style>
+<style lang="scss" scoped></style>

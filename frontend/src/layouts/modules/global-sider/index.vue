@@ -33,4 +33,4 @@ const menuWrapperClass = computed(() => (showLogo.value ? 'flex-1-hidden' : 'h-f
   </DarkModeContainer>
 </template>
 
-<style scoped></style>
+<style lang="scss" scoped></style>

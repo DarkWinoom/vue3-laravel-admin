@@ -26,4 +26,4 @@ const themeStore = useThemeStore();
   </div>
 </template>
 
-<style scoped></style>
+<style lang="scss" scoped></style>

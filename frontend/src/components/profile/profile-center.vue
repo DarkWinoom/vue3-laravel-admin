@@ -19,7 +19,7 @@ import ProfilePassword from './profile-password.vue';
   </div>
 </template>
 
-<style scoped>
+<style lang="scss" scoped>
 .profile-page,
 .profile-card,
 .profile-tabs {

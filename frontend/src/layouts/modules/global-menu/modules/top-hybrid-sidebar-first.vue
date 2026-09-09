@@ -61,4 +61,4 @@ function handleSelectMenu(key: RouteKey) {
   </Teleport>
 </template>
 
-<style scoped></style>
+<style lang="scss" scoped></style>

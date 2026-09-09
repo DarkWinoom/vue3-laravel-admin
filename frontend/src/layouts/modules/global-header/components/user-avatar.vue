@@ -80,4 +80,4 @@ function handleDropdown(key: DropdownKey) {
   </NDropdown>
 </template>
 
-<style scoped></style>
+<style lang="scss" scoped></style>

@@ -55,4 +55,4 @@ function resetScroll() {
   </RouterView>
 </template>
 
-<style></style>
+<style lang="scss"></style>

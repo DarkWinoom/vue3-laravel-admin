@@ -10,4 +10,4 @@ defineOptions({
   <GlobalContent :show-padding="false" />
 </template>
 
-<style scoped></style>
+<style lang="scss" scoped></style>

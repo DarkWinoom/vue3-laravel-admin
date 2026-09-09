@@ -10,6 +10,8 @@ Vue3 + Laravel 13 + MySQL 8，界面基于 soybean-admin Tauri 分支。
 
 底部版权默认隐藏，组件保留。可在“主题配置 → 布局 → 显示底部”随时恢复；默认值由 `frontend/src/theme/settings.ts` 的 `themeSettings.footer.visible` 控制。个人中心使用满高单栏卡片，表单内容独立滚动，底部操作区保持固定位置。
 
+Vue 组件样式统一使用 `<style lang="scss" scoped>`；需要全局作用域时保留非 scoped 样式。项目已包含 Sass，Vite 通过 `@use` 注入 `frontend/src/styles/scss/global.scss` 中的共享 mixin；页面生成模板也默认使用 SCSS。
+
 ## 目录
 
 ```text

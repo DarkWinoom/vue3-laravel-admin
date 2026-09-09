@@ -84,7 +84,7 @@ defineProps<{ title: string; subtitle: string }>();
 }
 
 .profile-section__heading p {
-  color: rgba(var(--base-text-color), 0.55);
+  color: rgb(var(--base-text-color) / 0.65);
   font-size: 14px;
   line-height: 20px;
 }
@@ -92,7 +92,7 @@ defineProps<{ title: string; subtitle: string }>();
 .profile-section__footer {
   flex-shrink: 0;
   padding: 16px 32px;
-  border-top: 1px solid rgba(var(--base-text-color), 0.09);
+  border-top: 1px solid rgb(var(--base-text-color) / 0.09);
 }
 
 .profile-section__actions {

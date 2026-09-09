@@ -3,10 +3,26 @@
 namespace App\Modules\Access\Application;
 
 use App\Models\User;
+use Closure;
 use Illuminate\Support\Facades\DB;
 
 final class AccessQuery
 {
+    /**
+     * @template T
+     *
+     * @param  Closure(): T  $read
+     * @return T
+     */
+    public function snapshot(Closure $read): mixed
+    {
+        return DB::transaction(function () use ($read) {
+            DB::table('access_state')->where('id', 1)->sharedLock()->first();
+
+            return $read();
+        });
+    }
+
     /** @return list<string> */
     public function roles(User $user): array
     {

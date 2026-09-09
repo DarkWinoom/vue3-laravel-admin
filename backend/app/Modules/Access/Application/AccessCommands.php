@@ -57,7 +57,7 @@ final class AccessCommands
     /** @param list<int> $roleIds */
     public function assign(User $target, array $roleIds, ?User $actor): void
     {
-        $roleIds = array_values(array_unique($roleIds));
+        $roleIds = array_values(array_unique(array_map(intval(...), $roleIds)));
         if ($actor) {
             $this->protectTarget($actor, $target);
         }

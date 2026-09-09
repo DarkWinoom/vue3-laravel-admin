@@ -11,6 +11,10 @@
   "scripts": {
     "setup": "node scripts/setup.mjs",
     "dev": "node scripts/dev.mjs",
+    "dev:test": "node scripts/dev.mjs --testing",
+    "admin:create": "node scripts/backend.mjs admin:create",
+    "access:replay": "node scripts/backend.mjs access:replay",
+    "test:seed": "node scripts/backend.mjs test:seed",
     "dev:desktop": "node scripts/dev.mjs --desktop",
     "typecheck": "pnpm --dir frontend typecheck",
     "lint": "pnpm --dir frontend lint:check",

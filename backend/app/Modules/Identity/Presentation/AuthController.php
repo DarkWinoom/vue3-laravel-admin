@@ -3,6 +3,7 @@
 namespace App\Modules\Identity\Presentation;
 
 use App\Models\User;
+use App\Modules\Access\Application\AccessCommands;
 use App\Modules\Access\Application\AccessQuery;
 use App\Modules\Identity\Application\SessionService;
 use App\Shared\Api;
@@ -66,6 +67,7 @@ final class AuthController
     {
         $data = $request->validate(['name' => 'required|string|max:100', 'currentPassword' => 'required_with:password|string', 'password' => 'nullable|string|min:12|max:128|confirmed']);
         $user = DB::transaction(function () use ($request, $data, $sessions) {
+            app(AccessCommands::class)->lock();
             $user = User::whereKey($request->user()->id)->lockForUpdate()->firstOrFail();
             if (! empty($data['password'])) {
                 if (! Hash::check($data['currentPassword'], $user->password)) {
@@ -76,6 +78,7 @@ final class AuthController
             }
             $user->name = $data['name'];
             $user->save();
+            DB::table('access_state')->where('id', 1)->increment('version');
 
             return $user;
         });

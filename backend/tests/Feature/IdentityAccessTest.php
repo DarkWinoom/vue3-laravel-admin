@@ -218,4 +218,28 @@ final class IdentityAccessTest extends TestCase
         $this->travel(8)->days();
         $this->postJson('/api/v1/auth/refresh', ['client' => 'desktop', 'refreshToken' => $other['refreshToken']])->assertUnauthorized();
     }
+
+    public function test_profile_changes_invalidate_stale_management_versions(): void
+    {
+        $version = $this->version();
+        $this->withToken($this->token)->putJson('/api/v1/auth/profile', ['name' => 'Updated profile'])->assertOk();
+        $this->putJson('/api/v1/users/'.$this->admin->id, ['name' => 'Stale name', 'email' => $this->admin->email, 'enabled' => true, 'version' => $version])->assertStatus(409);
+        $this->assertSame('Updated profile', $this->admin->fresh()->name);
+    }
+
+    public function test_numeric_string_role_ids_do_not_bypass_admin_assignment_protection(): void
+    {
+        DB::transaction(function () {
+            $commands = app(AccessCommands::class);
+            $commands->lock();
+            $role = $commands->save('roles', ['name' => 'all_permissions', 'permissionIds' => DB::table('permissions')->pluck('id')->all()], null, $this->admin);
+            $manager = User::create(['name' => 'Manager', 'email' => 'manager@example.test', 'password' => self::PASSWORD]);
+            $commands->assign($manager, [$role], $this->admin);
+        });
+        $target = User::factory()->create();
+        $token = $this->login('manager@example.test')['token'];
+        $adminRole = (string) DB::table('roles')->where('name', 'admin')->value('id');
+        $this->withToken($token)->putJson('/api/v1/users/'.$target->id, ['name' => $target->name, 'email' => $target->email, 'enabled' => true, 'roleIds' => [$adminRole], 'version' => $this->version()])->assertForbidden();
+        $this->assertSame([], app(AccessQuery::class)->roles($target));
+    }
 }

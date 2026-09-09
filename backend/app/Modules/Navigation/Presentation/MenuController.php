@@ -22,9 +22,12 @@ final class MenuController
     {
         $commands->authorize($request->user(), 'menus.read');
         $data = $request->validate(['page' => 'integer|min:1', 'pageSize' => 'integer|min:1|max:100', 'search' => 'nullable|string|max:100']);
-        $page = DB::table('menus')->when($data['search'] ?? null, fn ($q, $value) => $q->where('title', 'like', "%$value%"))->orderBy('sort')->orderBy('id')->paginate($data['pageSize'] ?? 20);
 
-        return Api::ok(['records' => $page->items(), 'total' => $page->total(), 'page' => $page->currentPage(), 'pageSize' => $page->perPage(), 'version' => $query->version()]);
+        return $query->snapshot(function () use ($data, $query) {
+            $page = DB::table('menus')->when($data['search'] ?? null, fn ($q, $value) => $q->where('title', 'like', "%$value%"))->orderBy('sort')->orderBy('id')->paginate($data['pageSize'] ?? 20);
+
+            return Api::ok(['records' => $page->items(), 'total' => $page->total(), 'page' => $page->currentPage(), 'pageSize' => $page->perPage(), 'version' => $query->version()]);
+        });
     }
 
     public function save(MenuRequest $request, AccessCommands $commands, ?int $id = null): JsonResponse

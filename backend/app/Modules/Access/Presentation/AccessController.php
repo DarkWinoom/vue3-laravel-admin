@@ -15,15 +15,18 @@ final class AccessController
     {
         $commands->authorize($request->user(), $resource.'.read');
         $filters = $request->validate(['page' => 'integer|min:1', 'pageSize' => 'integer|min:1|max:100', 'search' => 'nullable|string|max:100']);
-        $page = DB::table($resource)->where('guard_name', 'web')->when($filters['search'] ?? null, fn ($q, $value) => $q->where('name', 'like', "%$value%"))->orderBy('id')->paginate($filters['pageSize'] ?? 20);
-        $items = $page->items();
-        if ($resource === 'roles') {
-            foreach ($items as $item) {
-                $item->permissionIds = DB::table('role_has_permissions')->where('role_id', $item->id)->pluck('permission_id')->all();
-            }
-        }
 
-        return Api::ok(['records' => $items, 'total' => $page->total(), 'page' => $page->currentPage(), 'pageSize' => $page->perPage(), 'version' => $query->version()]);
+        return $query->snapshot(function () use ($resource, $filters, $query) {
+            $page = DB::table($resource)->where('guard_name', 'web')->when($filters['search'] ?? null, fn ($q, $value) => $q->where('name', 'like', "%$value%"))->orderBy('id')->paginate($filters['pageSize'] ?? 20);
+            $items = $page->items();
+            if ($resource === 'roles') {
+                foreach ($items as $item) {
+                    $item->permissionIds = DB::table('role_has_permissions')->where('role_id', $item->id)->pluck('permission_id')->all();
+                }
+            }
+
+            return Api::ok(['records' => $items, 'total' => $page->total(), 'page' => $page->currentPage(), 'pageSize' => $page->perPage(), 'version' => $query->version()]);
+        });
     }
 
     public function save(AccessRequest $request, AccessCommands $commands, AccessQuery $query, string $resource, ?int $id = null): JsonResponse

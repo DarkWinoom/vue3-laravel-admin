@@ -17,7 +17,7 @@ final class UserController
         $commands->authorize($request->user(), 'users.read');
         $filters = $request->validate(['page' => 'integer|min:1', 'pageSize' => 'integer|min:1|max:100', 'search' => 'nullable|string|max:100']);
 
-        return Api::ok(app(UserQuery::class)->page($filters));
+        return $access->snapshot(fn () => Api::ok(app(UserQuery::class)->page($filters)));
     }
 
     public function save(UserRequest $request, AccessCommands $commands, AccessQuery $access, ?int $id = null): JsonResponse

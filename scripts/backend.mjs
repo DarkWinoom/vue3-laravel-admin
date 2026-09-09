@@ -10,12 +10,23 @@ const commands = {
   ],
   test: [['vendor/bin/phpunit']],
   'test:mysql': [['vendor/bin/phpunit']],
-  migrate: [['artisan', 'migrate', '--env=development']]
+  migrate: [['artisan', 'migrate', '--env=development']],
+  'admin:create': [['artisan', 'admin:create', ...process.argv.slice(3)]],
+  'access:replay': [['artisan', 'access:replay']],
+  'test:seed': [
+    ['artisan', 'migrate'],
+    ['artisan', 'db:seed', '--class=Tests\\Fixtures\\BrowserSeeder']
+  ]
 };
 if (!commands[action]) throw new Error(`Unknown backend action: ${action}`);
-const env = backendEnvironment(action === 'migrate' ? 'development' : 'testing');
+const env = backendEnvironment(
+  ['migrate', 'admin:create', 'access:replay'].includes(action) ? 'development' : 'testing'
+);
 if (action === 'test') Object.assign(env, { DB_CONNECTION: 'sqlite', DB_DATABASE: ':memory:', DB_URL: '' });
-if (action === 'test:mysql' && (env.DB_CONNECTION !== 'mysql' || !env.DB_DATABASE.endsWith('_testing'))) {
+if (
+  ['test:mysql', 'test:seed'].includes(action) &&
+  (env.DB_CONNECTION !== 'mysql' || !env.DB_DATABASE.endsWith('_testing'))
+) {
   throw new Error('MySQL tests require a dedicated database ending in _testing');
 }
 for (const args of commands[action]) {

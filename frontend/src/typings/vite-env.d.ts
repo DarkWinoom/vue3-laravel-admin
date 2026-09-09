@@ -10,6 +10,11 @@ declare namespace Env {
   /** Interface for import.meta */
   // eslint-disable-next-line @typescript-eslint/no-shadow
   interface ImportMeta extends ImportMetaEnv {
+    readonly VITE_DESKTOP_BUILD?: string;
+    readonly VITE_DESKTOP_API_URL?: string;
+    readonly VITE_DESKTOP_ALLOW_LOCAL_HTTP?: string;
+    readonly VITE_DESKTOP_UPDATER_ENABLED?: string;
+    readonly VITE_APP_VERSION?: string;
     /** The base url of the application */
     readonly VITE_BASE_URL: string;
     /** The title of the application */

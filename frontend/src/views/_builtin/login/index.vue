@@ -6,6 +6,7 @@ import { loginModuleRecord } from '@/constants/app';
 import { useThemeStore } from '@/store/modules/theme';
 import { $t } from '@/locales';
 import PwdLogin from './modules/pwd-login.vue';
+import { desktopPanelVisible, isDesktopRuntime } from '@/desktop/connection';
 
 const themeStore = useThemeStore();
 
@@ -48,6 +49,9 @@ const bgColor = computed(() => {
               <component :is="activeModule.component" />
             </Transition>
           </div>
+          <NButton v-if="isDesktopRuntime" text type="primary" class="mt-16px" @click="desktopPanelVisible = true">
+            连接与更新
+          </NButton>
         </main>
       </div>
     </NCard>

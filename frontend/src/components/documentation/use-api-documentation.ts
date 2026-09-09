@@ -4,6 +4,7 @@ import 'swagger-ui-dist/swagger-ui.css';
 import { request } from '@/service/request';
 import { csrfToken, sessionState } from '@/service/request/session';
 import { getServiceBaseURL } from '@/utils/service';
+import { desktopBaseUrl, isDesktopRuntime } from '@/desktop/connection';
 
 export function useApiDocumentation() {
   const container = shallowRef<HTMLElement | null>(null);
@@ -14,7 +15,10 @@ export function useApiDocumentation() {
     import.meta.env,
     import.meta.env.DEV && import.meta.env.VITE_HTTP_PROXY === 'Y'
   );
-  const api = new URL(baseURL.replace(/\/$/, '') + '/api', window.location.origin);
+  const api = new URL(
+    isDesktopRuntime ? desktopBaseUrl().replace(/\/v1$/, '') : baseURL.replace(/\/$/, '') + '/api',
+    window.location.origin
+  );
 
   async function load() {
     if (loading.value) return;
@@ -33,7 +37,7 @@ export function useApiDocumentation() {
         deepLinking: false,
         validatorUrl: null,
         persistAuthorization: false,
-        withCredentials: true,
+        withCredentials: !isDesktopRuntime,
         docExpansion: 'none',
         defaultModelsExpandDepth: -1,
         requestInterceptor: async req => {

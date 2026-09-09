@@ -1,0 +1,90 @@
+name: Quality and desktop
+on:
+  push:
+    branches: [main, 'codex/**']
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  quality:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: testing
+          MYSQL_DATABASE: admin_testing
+        ports: ['3306:3306']
+        options: --health-cmd="mysqladmin ping -h 127.0.0.1 -ptesting" --health-interval=5s --health-timeout=5s --health-retries=20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: ./.github/actions/setup
+      - run: node scripts/ci-env.mjs
+      - run: pnpm check
+      - run: pnpm test
+      - run: pnpm test:mysql
+      - run: pnpm api:check
+      - run: pnpm --dir frontend exec playwright install --with-deps chromium
+      - run: pnpm test:e2e
+      - run: pnpm build:web
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: failure()
+        with:
+          name: browser-test-report
+          path: |
+            frontend/playwright-report/
+            frontend/test-results/
+  desktop:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-2025
+            name: windows
+            bundles: nsis
+          - os: macos-15
+            name: macos
+            bundles: app,dmg
+          - os: ubuntu-24.04
+            name: linux
+            bundles: appimage,deb
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: ./.github/actions/setup
+      - name: Linux system libraries
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y libwebkit2gtk-4.1-dev build-essential libssl-dev libayatana-appindicator3-dev librsvg2-dev patchelf xvfb
+      - name: Rust toolchain
+        shell: bash
+        run: rustup toolchain install 1.97.1 --profile minimal --component rustfmt --component clippy
+      - run: pnpm check:desktop
+      - name: Native test build
+        run: node scripts/desktop.mjs build --mode testing --api http://127.0.0.1:8021 --debug --no-bundle --features desktop-e2e
+      - name: Native UI test (Linux)
+        if: runner.os == 'Linux'
+        run: xvfb-run -a node scripts/native-e2e.mjs
+        env:
+          WEBKIT_DISABLE_DMABUF_RENDERER: '1'
+      - name: Native UI test
+        if: runner.os != 'Linux'
+        run: node scripts/native-e2e.mjs
+      - name: Production packages
+        run: node scripts/desktop.mjs build --bundles ${{ matrix.bundles }}
+      - run: node scripts/collect-artifacts.mjs
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: desktop-${{ matrix.name }}
+          path: .release-artifacts/
+          if-no-files-found: error
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: failure()
+        with:
+          name: native-test-${{ matrix.name }}
+          path: test-results/native/

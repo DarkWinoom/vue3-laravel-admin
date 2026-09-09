@@ -25,7 +25,7 @@
     "test": "node --test scripts/tests/*.test.mjs frontend/tests/*.test.ts && node scripts/backend.mjs test",
     "test:mysql": "node scripts/backend.mjs test:mysql",
     "build:web": "pnpm --dir frontend build",
-    "build:desktop": "pnpm --dir frontend build:tauri",
+    "build:desktop": "node scripts/desktop.mjs build",
     "db:migrate": "node scripts/backend.mjs migrate",
     "prepare": "simple-git-hooks",
     "install:local": "pnpm --dir frontend install --frozen-lockfile && composer --working-dir=backend install",
@@ -34,7 +34,14 @@
     "docker:down": "node scripts/docker.mjs down",
     "api:generate": "node scripts/openapi.mjs",
     "api:check": "node scripts/openapi.mjs --check",
-    "icons:generate": "node scripts/icons.mjs"
+    "icons:generate": "node scripts/icons.mjs",
+    "build:desktop:test": "node scripts/desktop.mjs build --mode testing",
+    "dev:desktop:test": "node scripts/dev.mjs --desktop --testing",
+    "check:desktop": "pnpm build:web && cargo fmt --manifest-path frontend/src-tauri/Cargo.toml --check && cargo clippy --manifest-path frontend/src-tauri/Cargo.toml --locked --all-targets -- -D warnings",
+    "test:e2e": "node scripts/backend.mjs test:seed && pnpm --dir frontend exec playwright test",
+    "ci:env": "node scripts/ci-env.mjs",
+    "test:desktop": "node scripts/native-e2e.mjs",
+    "upstream:check": "node scripts/upstream-check.mjs"
   },
   "devDependencies": {
     "concurrently": "9.2.1",
@@ -44,5 +51,6 @@
   "simple-git-hooks": {
     "pre-commit": "pnpm check",
     "commit-msg": "node scripts/verify-commit.mjs"
-  }
+  },
+  "version": "0.1.0"
 }

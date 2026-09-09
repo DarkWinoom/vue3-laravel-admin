@@ -12,7 +12,7 @@ final class BrowserSeeder extends Seeder
 {
     public function run(InitializeAdmin $initialize): void
     {
-        if (! app()->environment('testing') || ! str_ends_with(config('database.connections.mysql.database'), '_testing')) {
+        if (! app()->environment('testing') || ! str_ends_with(config('database.connections.'.config('database.default').'.database'), '_testing')) {
             throw new \RuntimeException('Browser fixtures require the dedicated testing database.');
         }
         DB::transaction(function () use ($initialize) {

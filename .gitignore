@@ -12,3 +12,8 @@ test-results/
 backend/bootstrap/cache/*.php
 backend/storage/*.key
 .DS_Store
+
+.release-keys/
+.release-artifacts/
+
+frontend/src-tauri/gen/

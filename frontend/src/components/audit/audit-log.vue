@@ -21,9 +21,9 @@ const {
 </script>
 
 <template>
-  <div class="min-h-500px flex-col-stretch gap-16px overflow-hidden lt-sm:overflow-auto">
+  <div class="min-h-500px flex-col-stretch gap-16px overflow-auto">
     <AuditSearch v-model:model="filters" @search="getDataByPage(1)" @reset="reset" />
-    <NCard title="操作审计" :bordered="false" size="small" class="card-wrapper sm:flex-1-hidden">
+    <NCard title="操作审计" :bordered="false" size="small" class="card-wrapper audit-table sm:flex-1-hidden">
       <template #header-extra>
         <TableHeaderOperation
           v-model:columns="columnChecks"
@@ -49,3 +49,9 @@ const {
     <AuditDetail :selected="selected" @close="selected = null" />
   </div>
 </template>
+
+<style scoped lang="scss">
+.audit-table {
+  min-height: 320px;
+}
+</style>

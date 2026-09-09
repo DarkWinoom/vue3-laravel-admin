@@ -13,3 +13,8 @@ frontend/src/typings/components.d.ts
 frontend/src/typings/elegant-router.d.ts
 frontend/src/router/elegant/
 *.php
+
+.release-keys/
+.release-artifacts/
+
+frontend/src-tauri/gen/

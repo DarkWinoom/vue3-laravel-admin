@@ -38,9 +38,14 @@ const {
 </script>
 
 <template>
-  <div class="min-h-500px flex-col-stretch gap-16px overflow-hidden lt-sm:overflow-auto">
+  <div class="min-h-500px flex-col-stretch gap-16px overflow-auto">
     <ManagementSearch v-model:model="filters" :resource="resource" @search="getDataByPage(1)" @reset="reset" />
-    <NCard :title="titles[resource]" :bordered="false" size="small" class="card-wrapper sm:flex-1-hidden">
+    <NCard
+      :title="titles[resource]"
+      :bordered="false"
+      size="small"
+      class="card-wrapper management-table sm:flex-1-hidden"
+    >
       <template #header-extra>
         <TableHeaderOperation
           v-model:columns="columnChecks"
@@ -111,3 +116,9 @@ const {
     </NCard>
   </div>
 </template>
+
+<style scoped lang="scss">
+.management-table {
+  min-height: 320px;
+}
+</style>

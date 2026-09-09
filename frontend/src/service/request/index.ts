@@ -2,6 +2,7 @@ import { axios } from '@sa/axios';
 import type { AxiosRequestConfig, AxiosResponse } from '@sa/axios';
 import { useAuthStore } from '@/store/modules/auth';
 import { getServiceBaseURL } from '@/utils/service';
+import { desktopBaseUrl } from '@/desktop/connection';
 import { clearSession, csrfToken, isDesktop, sessionState, setSession } from './session';
 import { createSessionRefresh } from './refresh';
 import { createSessionRequest, SessionChangedError } from './session-request';
@@ -14,7 +15,11 @@ interface Envelope<T> {
 }
 const isProxy = import.meta.env.DEV && import.meta.env.VITE_HTTP_PROXY === 'Y';
 const { baseURL } = getServiceBaseURL(import.meta.env, isProxy);
-const http = axios.create({ baseURL: baseURL.replace(/\/$/, '') + '/api/v1', withCredentials: true, timeout: 15000 });
+const http = axios.create({
+  baseURL: baseURL.replace(/\/$/, '') + '/api/v1',
+  withCredentials: !isDesktop,
+  timeout: 15000
+});
 export const refreshSession = createSessionRefresh({
   revision: () => sessionState.revision,
   apply: tokens => setSession(tokens, false),
@@ -23,7 +28,7 @@ export const refreshSession = createSessionRefresh({
     http
       .post<
         Envelope<Api.Auth.LoginToken>
-      >('/auth/refresh', { client: isDesktop ? 'desktop' : 'web', ...(isDesktop ? { refreshToken: sessionState.refreshToken } : {}) }, { headers: { 'X-CSRF-Token': csrfToken() } })
+      >('/auth/refresh', { client: isDesktop ? 'desktop' : 'web', ...(isDesktop ? { refreshToken: sessionState.refreshToken } : {}) }, { baseURL: isDesktop ? desktopBaseUrl() : undefined, headers: { 'X-CSRF-Token': csrfToken() } })
       .then(({ data }) => data.data)
 });
 
@@ -44,6 +49,7 @@ export async function request<T = null>(
     const response = await execute(sentToken =>
       http.request<Envelope<T>>({
         ...config,
+        ...(isDesktop ? { baseURL: desktopBaseUrl() } : {}),
         headers: {
           ...config.headers,
           Authorization: sentToken ? 'Bearer ' + sentToken : '',

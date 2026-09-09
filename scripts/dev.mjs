@@ -29,7 +29,7 @@ try {
       {
         name: desktop ? 'desktop' : 'web',
         command: desktop
-          ? 'node ../scripts/desktop.mjs'
+          ? 'node ../scripts/desktop.mjs dev --mode ' + mode
           : mode === 'testing'
             ? 'node node_modules/vite/bin/vite.js --mode testing'
             : 'pnpm dev',

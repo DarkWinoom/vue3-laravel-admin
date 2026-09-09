@@ -6,6 +6,7 @@ import { clearSession, csrfToken, isDesktop, sessionState, setSession } from '@/
 import { useRouterPush } from '@/hooks/common/router';
 import { localStg } from '@/utils/storage';
 import { SetupStoreId } from '@/enum';
+import { desktopApiOrigin, desktopPanelVisible } from '@/desktop/connection';
 import { useRouteStore } from '../route';
 import { useTabStore } from '../tab';
 
@@ -47,6 +48,10 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
     if (token.value) await getUserInfo();
   }
   async function login(email: string, password: string) {
+    if (isDesktop && !desktopApiOrigin.value) {
+      desktopPanelVisible.value = true;
+      return;
+    }
     loginLoading.value = true;
     try {
       const { data, error } = await fetchLogin(email, password);

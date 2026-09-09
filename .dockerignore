@@ -11,3 +11,8 @@ backend/bootstrap/cache/*.php
 backend/storage/**
 !backend/storage/**/.gitignore
 **/*.log
+
+.release-keys/
+.release-artifacts/
+
+frontend/src-tauri/gen/

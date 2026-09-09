@@ -5,6 +5,7 @@ import { useAuthStore } from '@/store/modules/auth';
 import { useRouterPush } from '@/hooks/common/router';
 import { useSvgIcon } from '@/hooks/common/icon';
 import { $t } from '@/locales';
+import { desktopPanelVisible, isDesktopRuntime } from '@/desktop/connection';
 
 defineOptions({
   name: 'UserAvatar'
@@ -18,7 +19,7 @@ function loginOrRegister() {
   toLogin();
 }
 
-type DropdownKey = 'logout' | 'profile';
+type DropdownKey = 'logout' | 'profile' | 'desktop';
 
 type DropdownOption =
   | {
@@ -41,6 +42,12 @@ const options = computed(() => {
     }
   ];
 
+  if (isDesktopRuntime)
+    opts.splice(1, 0, {
+      key: 'desktop',
+      label: '连接与更新',
+      icon: SvgIconVNode({ icon: 'mdi:cog-outline', fontSize: 18 })
+    });
   return opts;
 });
 
@@ -57,7 +64,9 @@ function logout() {
 }
 
 function handleDropdown(key: DropdownKey) {
-  if (key === 'logout') {
+  if (key === 'desktop') {
+    desktopPanelVisible.value = true;
+  } else if (key === 'logout') {
     logout();
   } else {
     // If your other options are jumps from other routes, they will be directly supported here

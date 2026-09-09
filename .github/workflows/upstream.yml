@@ -1,0 +1,49 @@
+name: Upstream proposal
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '23 3 * * 1'
+permissions:
+  contents: write
+  pull-requests: write
+concurrency:
+  group: upstream-proposal
+  cancel-in-progress: false
+jobs:
+  propose:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24.19.0
+      - name: Generate source diff without applying it
+        run: node scripts/upstream-check.mjs
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: upstream-diff
+          path: |
+            test-results/upstream/
+            upstream-candidate.json
+          if-no-files-found: ignore
+      - name: Open a single review proposal
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          test -f upstream-candidate.json || exit 0
+          existing=$(gh pr list --state open --label upstream-sync --json number --jq length)
+          test "$existing" = 0 || exit 0
+          branch=$(node -e "const c=require('./upstream-candidate.json');console.log('codex/upstream-'+Object.values(c.heads).map(x=>x.slice(0,8)).join('-'))")
+          previous=$(gh pr list --state all --head "$branch" --json number --jq length)
+          test "$previous" = 0 || exit 0
+          git checkout -b "$branch"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add upstream-candidate.json
+          git commit -m "chore: propose upstream synchronization"
+          git push origin "$branch"
+          gh label create upstream-sync --color 7057ff --description "Pinned upstream review proposal" --force
+          printf '%s\n' '检测到上游分支变化。本 PR 仅记录候选 SHA，不修改应用代码，也不推进 upstream.json 基线。' '' '请先审阅本次工作流的 upstream-diff 产物，再选择性移植、处理冲突并运行项目检查。' > /tmp/upstream-body.md
+          gh pr create --draft --base main --head "$branch" --label upstream-sync --title "chore: review upstream changes" --body-file /tmp/upstream-body.md

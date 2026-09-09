@@ -14,16 +14,16 @@ const results = [
       <NCollapseItem title="搜索" name="audit-search">
         <NForm label-placement="left" :label-width="90" @submit.prevent="emit('search')">
           <NGrid responsive="self" item-responsive :x-gap="8">
-            <NFormItemGi span="24 s:12 m:8" label="操作人">
+            <NFormItemGi span="24 600:12 960:8" label="操作人">
               <NInput v-model:value="model.actor" placeholder="请输入操作人" clearable />
             </NFormItemGi>
-            <NFormItemGi span="24 s:12 m:8" label="操作标识">
+            <NFormItemGi span="24 600:12 960:8" label="操作标识">
               <NInput v-model:value="model.action" placeholder="如 user.created" clearable />
             </NFormItemGi>
-            <NFormItemGi span="24 s:12 m:8" label="操作结果">
+            <NFormItemGi span="24 600:12 960:8" label="操作结果">
               <NSelect v-model:value="model.result" :options="results" placeholder="全部结果" clearable />
             </NFormItemGi>
-            <NFormItemGi span="24 s:12 m:8" label="开始日期">
+            <NFormItemGi span="24 600:12 960:8" label="开始日期">
               <NDatePicker
                 v-model:formatted-value="model.dateFrom"
                 value-format="yyyy-MM-dd"
@@ -32,7 +32,7 @@ const results = [
                 class="w-full"
               />
             </NFormItemGi>
-            <NFormItemGi span="24 s:12 m:8" label="结束日期">
+            <NFormItemGi span="24 600:12 960:8" label="结束日期">
               <NDatePicker
                 v-model:formatted-value="model.dateTo"
                 value-format="yyyy-MM-dd"
@@ -41,7 +41,7 @@ const results = [
                 class="w-full"
               />
             </NFormItemGi>
-            <NFormItemGi span="24 s:12 m:8" label="请求编号">
+            <NFormItemGi span="24 600:12 960:8" label="请求编号">
               <NInput v-model:value="model.requestId" placeholder="请输入完整请求编号" clearable />
             </NFormItemGi>
             <NFormItemGi span="24">

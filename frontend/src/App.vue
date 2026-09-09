@@ -5,6 +5,8 @@ import type { WatermarkProps } from 'naive-ui';
 import { useAppStore } from './store/modules/app';
 import { useThemeStore } from './store/modules/theme';
 import { naiveDateLocales, naiveLocales } from './locales/naive';
+import { isDesktopRuntime } from './desktop/connection';
+import DesktopPanel from './components/desktop/desktop-panel.vue';
 
 defineOptions({
   name: 'App'
@@ -50,6 +52,7 @@ const watermarkProps = computed<WatermarkProps>(() => {
   >
     <AppProvider>
       <RouterView class="bg-layout" />
+      <DesktopPanel v-if="isDesktopRuntime" />
       <NWatermark v-if="themeStore.watermark.visible" v-bind="watermarkProps" />
     </AppProvider>
   </NConfigProvider>

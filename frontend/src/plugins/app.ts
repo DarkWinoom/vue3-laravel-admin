@@ -15,7 +15,7 @@ export function setupAppVersionNotification() {
   const UPDATE_CHECK_INTERVAL = 3 * 60 * 1000;
 
   const canAutoUpdateApp = import.meta.env.VITE_AUTOMATICALLY_DETECT_UPDATE === 'Y' && import.meta.env.PROD;
-  if (!canAutoUpdateApp) return;
+  if (!canAutoUpdateApp || '__TAURI_INTERNALS__' in window) return;
 
   let isShow = false;
   let updateInterval: ReturnType<typeof setInterval> | undefined;

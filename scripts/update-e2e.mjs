@@ -63,13 +63,15 @@ async function command(method, suffix, body) {
 }
 const evaluate = script => command('POST', '/session/' + session + '/execute/sync', { script, args: [] });
 const bodyText = () => evaluate('return document.body.innerText');
-async function click(text) {
+async function click(text, deferred = false) {
   await wait(
     () =>
       evaluate(
         'const e=[...document.querySelectorAll("button,.n-tabs-tab")].find(e=>e.textContent.trim()===' +
           JSON.stringify(text) +
-          ' && e.getBoundingClientRect().width); if(!e || e.disabled)return false; e.click(); return true;'
+          ' && e.getBoundingClientRect().width); if(!e || e.disabled)return false; ' +
+          (deferred ? 'setTimeout(()=>e.click(),250);' : 'e.click();') +
+          ' return true;'
       ),
     'Missing updater control: ' + text
   );
@@ -167,6 +169,9 @@ try {
   );
   await attach();
   await showUpdates();
+  await evaluate(
+    "const original=window.__TAURI_INTERNALS__.invoke;window.__updateFailures=[];window.__TAURI_INTERNALS__.invoke=function(...args){return original.apply(this,args).catch(error=>{if(String(args[0]).startsWith('plugin:updater'))window.__updateFailures.push(String(error));throw error})};return true;"
+  );
   await click('检查更新');
   await wait(async () => (await bodyText()).includes('新版本 0.1.1'), 'Signed update not discovered');
   await click('下载并安装');
@@ -199,7 +204,7 @@ try {
       'Valid signed update did not install',
       120000
     );
-    await click('重启完成更新');
+    await click('重启完成更新', true);
   }
   await wait(() => children[0].exitCode !== null, 'Previous app did not exit after installing');
   session = null;
@@ -213,6 +218,12 @@ try {
     platform + ' updater verified: download failure, tamper rejection, signed 0.1.0 to 0.1.1 install and restart.'
   );
 } catch (error) {
+  if (session)
+    console.error(
+      'Updater diagnostic:',
+      await evaluate('return window.__updateFailures || []').catch(() => 'WebView exited')
+    );
+  console.error('Updater asset requests:', downloads);
   if (session)
     try {
       const png = await command('GET', '/session/' + session + '/screenshot');

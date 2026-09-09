@@ -64,6 +64,12 @@ jobs:
       - name: Rust toolchain
         shell: bash
         run: rustup toolchain install 1.97.1 --profile minimal --component rustfmt --component clippy
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+        with:
+          workspaces: frontend/src-tauri
+          shared-key: desktop-${{ runner.os }}
+          cache-on-failure: true
+          save-if: ${{ github.ref == 'refs/heads/main' }}
       - run: pnpm check:desktop
       - name: Native test build
         run: node scripts/desktop.mjs build --mode testing --api http://127.0.0.1:8021 --debug --no-bundle --features desktop-e2e

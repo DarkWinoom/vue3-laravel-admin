@@ -177,7 +177,7 @@ final class IdentityAccessTest extends TestCase
         $id = $this->postJson('/api/v1/menus', [...$data, 'version' => $this->version()])->assertOk()->json('data.id');
         $this->putJson('/api/v1/menus/'.$id, [...$data, 'parent_id' => $id, 'version' => $this->version()])->assertUnprocessable();
         $this->putJson('/api/v1/menus/'.$id, [...$data, 'title' => '新团队', 'version' => $this->version()])->assertOk();
-        $this->getJson('/api/v1/menus?search=新团队')->assertOk()->assertJsonPath('data.total', 1);
+        $this->getJson('/api/v1/menus?search='.rawurlencode('新团队'))->assertOk()->assertJsonPath('data.total', 1);
         $this->deleteJson('/api/v1/menus/'.$id, ['version' => $this->version()])->assertOk();
     }
 

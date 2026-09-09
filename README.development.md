@@ -280,8 +280,8 @@ pnpm --dir frontend exec tauri signer generate -w /secure/location/admin-updater
 发布环境 `desktop-release` 限制 main 分支和 v\* 标签。升级根 `package.json.version` 后提交并推送 main，等待该提交的完整 CI 成功，再创建并推送同名版本标签：
 
 ```sh
-git tag v0.1.0
-git push origin v0.1.0
+git tag v0.1.1
+git push origin v0.1.1
 ```
 
 示例版本需替换为实际版本；不覆盖已存在的发布 tag。手动运行 release.yml 时也需要先有 tag，工作流检出该 tag，而非把正在变化的 main 当作版本源码。

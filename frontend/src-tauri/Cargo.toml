@@ -1,6 +1,6 @@
 [package]
 name = "vue3-laravel-admin"
-version = "0.1.0"
+version = "0.1.1"
 description = "Vue3 Laravel Admin desktop client"
 authors = ["DarkWinoom"]
 license = "MIT"

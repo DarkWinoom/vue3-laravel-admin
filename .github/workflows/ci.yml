@@ -70,6 +70,9 @@ jobs:
           shared-key: desktop-${{ runner.os }}
           cache-on-failure: true
           save-if: ${{ github.ref == 'refs/heads/main' }}
+      - run: pnpm check
+      - run: pnpm test
+      - run: pnpm api:check
       - run: pnpm check:desktop
       - name: Native test build
         run: node scripts/desktop.mjs build --mode testing --api http://127.0.0.1:8021 --debug --no-bundle --features desktop-e2e

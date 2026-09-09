@@ -52,5 +52,5 @@
     "pre-commit": "pnpm check",
     "commit-msg": "node scripts/verify-commit.mjs"
   },
-  "version": "0.1.0"
+  "version": "0.1.1"
 }

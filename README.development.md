@@ -289,3 +289,5 @@ git push origin v0.1.0
 可选系统签名：Windows 在 Secrets 提供 Base64 PFX `WINDOWS_CERTIFICATE` 和 `WINDOWS_CERTIFICATE_PASSWORD`，仓库变量 `WINDOWS_TIMESTAMP_URL` 填签名服务时间戳地址。工作流仅在 Windows runner 导入证书并在结束时移除。Apple 通过 `APPLE_CERTIFICATE`、`APPLE_CERTIFICATE_PASSWORD`、`APPLE_SIGNING_IDENTITY`、`APPLE_ID`、`APPLE_PASSWORD`、`APPLE_TEAM_ID` 注入签名和公证凭据。不提供这些凭据时生成未做系统签名/公证的验收包，Tauri 更新签名仍独立执行。
 
 签名更新回归命令为 `node scripts/update-e2e.mjs`，使用临时测试密钥和 Test 应用安装目录，在 Windows NSIS、macOS app 和 Linux AppImage 中覆盖下载失败、篡改拒绝、0.1.0 → 0.1.1 安装及重启，结束后卸载并清理临时文件。Linux 同样在 xvfb-run 下执行。CI 不使用生产签名密钥运行此测试。
+
+Linux 更新清单分别提供 AppImage 与 deb 的签名条目，客户端按当前安装格式匹配。deb 更新可能要求操作系统授权安装；AppImage 更新要求所在目录可写。

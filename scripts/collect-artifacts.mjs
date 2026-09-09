@@ -20,6 +20,19 @@ const source = files('frontend/src-tauri/target/release/bundle').filter(p =>
   /\.(exe|msi|dmg|deb|AppImage|tar\.gz)(\.sig)?$/.test(p)
 );
 if (!source.length) throw new Error('No desktop packages were produced');
+if (process.argv.includes('--signed') && platform === 'linux') {
+  for (const file of source.filter(p => p.endsWith('.deb'))) {
+    if (!existsSync(file + '.sig')) {
+      const signed = spawnSync(
+        process.execPath,
+        ['frontend/node_modules/@tauri-apps/cli/tauri.js', 'signer', 'sign', file],
+        { stdio: 'pipe', env: process.env }
+      );
+      if (signed.status !== 0) throw new Error('Debian update signing failed');
+      source.push(file + '.sig');
+    }
+  }
+}
 const assets = [];
 for (const file of source) {
   const name = key + '-' + path.basename(file).replaceAll(' ', '-');
@@ -27,8 +40,11 @@ for (const file of source) {
   assets.push(name);
 }
 let update;
+const updates = {};
 for (const name of assets.filter(n => n.endsWith('.sig'))) {
   const binary = name.slice(0, -4);
+  if (platform === 'linux' && binary.endsWith('.deb') && assets.includes(binary))
+    updates[key + '-deb'] = { file: binary, signature: readFileSync(path.join(destination, name), 'utf8').trim() };
   if (
     assets.includes(binary) &&
     ((platform === 'windows' && binary.endsWith('.exe')) ||
@@ -36,12 +52,13 @@ for (const name of assets.filter(n => n.endsWith('.sig'))) {
       (platform === 'linux' && binary.endsWith('.AppImage')))
   ) {
     update = { file: binary, signature: readFileSync(path.join(destination, name), 'utf8').trim() };
+    if (platform === 'linux') updates[key + '-appimage'] = update;
   }
 }
 if (process.argv.includes('--signed') && !update) throw new Error('Missing signed updater artifact for ' + key);
 writeFileSync(
   path.join(destination, 'build-' + key + '.json'),
-  JSON.stringify({ version, platform: key, assets, update }, null, 2) + '\n'
+  JSON.stringify({ version, platform: key, assets, update, updates }, null, 2) + '\n'
 );
 writeFileSync(
   path.join(destination, 'checksums-' + key + '.txt'),

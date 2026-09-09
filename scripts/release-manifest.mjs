@@ -1,4 +1,5 @@
 import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { releasePlatforms } from './release-platforms.mjs';
 import { appSettings } from './desktop-config.mjs';
 const { version } = appSettings();
 const tag = process.env.RELEASE_TAG;
@@ -7,20 +8,7 @@ const directory = '.release-artifacts';
 const builds = readdirSync(directory)
   .filter(n => /^build-.*\.json$/.test(n))
   .map(n => JSON.parse(readFileSync(directory + '/' + n, 'utf8')));
-for (const os of ['windows-', 'darwin-', 'linux-'])
-  if (!builds.some(b => b.platform.startsWith(os) && b.version === version && b.update))
-    throw new Error('Incomplete signed platform set: ' + os);
-const repo = process.env.GITHUB_REPOSITORY;
-if (!repo || !/^[-\w.]+\/[-\w.]+$/.test(repo)) throw new Error('GITHUB_REPOSITORY required');
-const platforms = Object.fromEntries(
-  builds.map(b => [
-    b.platform,
-    {
-      signature: b.update.signature,
-      url: 'https://github.com/' + repo + '/releases/download/' + tag + '/' + encodeURIComponent(b.update.file)
-    }
-  ])
-);
+const platforms = releasePlatforms(builds, version, process.env.GITHUB_REPOSITORY);
 writeFileSync(
   directory + '/latest.json',
   JSON.stringify(

@@ -15,7 +15,7 @@ final class UserController
     public function index(Request $request, AccessCommands $commands, AccessQuery $access): JsonResponse
     {
         $commands->authorize($request->user(), 'users.read');
-        $filters = $request->validate(['page' => 'integer|min:1', 'pageSize' => 'integer|min:1|max:100', 'search' => 'nullable|string|max:100']);
+        $filters = $request->validate(['page' => 'integer|min:1', 'pageSize' => 'integer|min:1|max:100', 'search' => 'nullable|string|max:100', 'name' => 'nullable|string|max:100', 'email' => 'nullable|string|max:255', 'enabled' => 'nullable|boolean']);
 
         return $access->snapshot(fn () => Api::ok(app(UserQuery::class)->page($filters)));
     }

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import ProfileForm from '@/components/access/profile-form.vue';
+import ProfileCenter from '@/components/profile/profile-center.vue';
 </script>
 
-<template><ProfileForm /></template>
+<template><ProfileCenter /></template>

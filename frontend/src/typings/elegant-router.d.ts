@@ -23,11 +23,12 @@ declare module "@elegant-router/types" {
     "home": "/home";
     "iframe-page": "/iframe-page/:url";
     "login": "/login/:module(pwd-login|code-login|register|reset-pwd|bind-wechat)?";
-    "menus": "/menus";
-    "permissions": "/permissions";
+    "manage": "/manage";
+    "manage_menu": "/manage/menu";
+    "manage_permission": "/manage/permission";
+    "manage_role": "/manage/role";
+    "manage_user": "/manage/user";
     "profile": "/profile";
-    "roles": "/roles";
-    "users": "/users";
   };
 
   /**
@@ -65,11 +66,8 @@ declare module "@elegant-router/types" {
     | "home"
     | "iframe-page"
     | "login"
-    | "menus"
-    | "permissions"
+    | "manage"
     | "profile"
-    | "roles"
-    | "users"
   >;
 
   /**
@@ -92,11 +90,11 @@ declare module "@elegant-router/types" {
     | "iframe-page"
     | "login"
     | "home"
-    | "menus"
-    | "permissions"
+    | "manage_menu"
+    | "manage_permission"
+    | "manage_role"
+    | "manage_user"
     | "profile"
-    | "roles"
-    | "users"
   >;
 
   /**

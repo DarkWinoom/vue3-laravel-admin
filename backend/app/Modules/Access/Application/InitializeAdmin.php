@@ -3,6 +3,7 @@
 namespace App\Modules\Access\Application;
 
 use App\Models\User;
+use App\Modules\Navigation\Application\DefaultMenus;
 use App\Shared\ApiException;
 use Illuminate\Support\Facades\DB;
 
@@ -23,9 +24,7 @@ final class InitializeAdmin
             $commands->record('role.saved', ['id' => $roleId, 'name' => 'admin', 'permissionIds' => DB::table('permissions')->pluck('id')->all()]);
             $user = User::create(['name' => $name, 'email' => $email, 'password' => $password, 'enabled' => true]);
             $commands->assign($user, [$roleId], null);
-            foreach (['users' => '用户管理', 'roles' => '角色管理', 'permissions' => '权限管理', 'menus' => '菜单管理'] as $key => $title) {
-                DB::table('menus')->insert(['name' => $key, 'title' => $title, 'path' => '/'.$key, 'component' => $key, 'permission' => $key.'.read', 'icon' => 'mdi:menu', 'sort' => 10, 'enabled' => true, 'created_at' => now(), 'updated_at' => now()]);
-            }
+            DefaultMenus::install();
 
             return $user;
         });

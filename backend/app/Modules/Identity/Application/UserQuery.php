@@ -13,10 +13,16 @@ final class UserQuery
      */
     public function page(array $filters): array
     {
-        $page = User::query()->when($filters['search'] ?? null, fn ($q, $value) => $q->where(fn ($q) => $q->where('name', 'like', "%$value%")->orWhere('email', 'like', "%$value%")))->orderBy('id')->paginate($filters['pageSize'] ?? 20, ['*'], 'page', $filters['page'] ?? 1);
+        $page = User::query()
+            ->when($filters['search'] ?? null, fn ($q, $value) => $q->where(fn ($q) => $q->where('name', 'like', "%$value%")->orWhere('email', 'like', "%$value%")))
+            ->when($filters['name'] ?? null, fn ($q, $value) => $q->where('name', 'like', "%$value%"))
+            ->when($filters['email'] ?? null, fn ($q, $value) => $q->where('email', 'like', "%$value%"))
+            ->when(isset($filters['enabled']), fn ($q) => $q->where('enabled', $filters['enabled']))
+            ->orderBy('id')->paginate($filters['pageSize'] ?? 20, ['*'], 'page', $filters['page'] ?? 1);
         $records = $page->map(fn (User $user) => [
             'id' => $user->id, 'name' => $user->name, 'email' => $user->email, 'enabled' => $user->enabled,
             'roleIds' => DB::table('model_has_roles')->where('model_type', User::class)->where('model_id', $user->id)->pluck('role_id')->all(),
+            'roleNames' => app(AccessQuery::class)->roles($user),
         ]);
 
         return ['records' => $records, 'total' => $page->total(), 'page' => $page->currentPage(), 'pageSize' => $page->perPage(), 'version' => app(AccessQuery::class)->version()];

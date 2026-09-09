@@ -203,10 +203,6 @@ const local: App.I18n.Schema = {
         enableTime: '显示当前时间',
         timeFormat: '时间格式'
       },
-      multilingual: {
-        title: '多语言设置',
-        visible: '显示多语言按钮'
-      },
       globalSearch: {
         title: '全局搜索设置',
         visible: '显示全局搜索按钮'
@@ -220,10 +216,11 @@ const local: App.I18n.Schema = {
     }
   },
   route: {
-    users: '用户管理',
-    roles: '角色管理',
-    permissions: '权限管理',
-    menus: '菜单管理',
+    manage: '系统管理',
+    manage_user: '用户管理',
+    manage_role: '角色管理',
+    manage_permission: '权限管理',
+    manage_menu: '菜单管理',
     profile: '个人中心',
     login: '登录',
     403: '无权限',

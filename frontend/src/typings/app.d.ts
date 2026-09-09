@@ -50,11 +50,6 @@ declare namespace App {
           /** Whether to show the breadcrumb icon */
           showIcon: boolean;
         };
-        /** Multilingual */
-        multilingual: {
-          /** Whether to show the multilingual */
-          visible: boolean;
-        };
         globalSearch: {
           /** Whether to show the GlobalSearch */
           visible: boolean;
@@ -296,12 +291,7 @@ declare namespace App {
   namespace I18n {
     type RouteKey = import('@elegant-router/types').RouteKey;
 
-    type LangType = 'en-US' | 'zh-CN';
-
-    type LangOption = {
-      label: string;
-      key: LangType;
-    };
+    type LangType = 'zh-CN';
 
     type I18nRouteKey = Exclude<RouteKey, 'root' | 'not-found'>;
 
@@ -462,10 +452,6 @@ declare namespace App {
             enableUserName: string;
             enableTime: string;
             timeFormat: string;
-          };
-          multilingual: {
-            title: string;
-            visible: string;
           };
           globalSearch: {
             title: string;

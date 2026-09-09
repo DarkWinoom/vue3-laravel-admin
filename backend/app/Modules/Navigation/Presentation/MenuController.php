@@ -9,7 +9,6 @@ use App\Modules\Navigation\Application\MenuQuery;
 use App\Shared\Api;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 final class MenuController
 {
@@ -23,11 +22,7 @@ final class MenuController
         $commands->authorize($request->user(), 'menus.read');
         $data = $request->validate(['page' => 'integer|min:1', 'pageSize' => 'integer|min:1|max:100', 'search' => 'nullable|string|max:100']);
 
-        return $query->snapshot(function () use ($data, $query) {
-            $page = DB::table('menus')->when($data['search'] ?? null, fn ($q, $value) => $q->where('title', 'like', "%$value%"))->orderBy('sort')->orderBy('id')->paginate($data['pageSize'] ?? 20);
-
-            return Api::ok(['records' => $page->items(), 'total' => $page->total(), 'page' => $page->currentPage(), 'pageSize' => $page->perPage(), 'version' => $query->version()]);
-        });
+        return $query->snapshot(fn () => Api::ok(app(MenuQuery::class)->page($data)));
     }
 
     public function save(MenuRequest $request, AccessCommands $commands, ?int $id = null): JsonResponse

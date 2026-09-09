@@ -76,22 +76,51 @@ export const generatedRoutes: GeneratedRoute[] = [
     }
   },
   {
-    name: 'menus',
-    path: '/menus',
-    component: 'layout.base$view.menus',
+    name: 'manage',
+    path: '/manage',
+    component: 'layout.base',
     meta: {
-      title: 'menus',
-      i18nKey: 'route.menus'
-    }
-  },
-  {
-    name: 'permissions',
-    path: '/permissions',
-    component: 'layout.base$view.permissions',
-    meta: {
-      title: 'permissions',
-      i18nKey: 'route.permissions'
-    }
+      title: 'manage',
+      i18nKey: 'route.manage'
+    },
+    children: [
+      {
+        name: 'manage_menu',
+        path: '/manage/menu',
+        component: 'view.manage_menu',
+        meta: {
+          title: 'manage_menu',
+          i18nKey: 'route.manage_menu'
+        }
+      },
+      {
+        name: 'manage_permission',
+        path: '/manage/permission',
+        component: 'view.manage_permission',
+        meta: {
+          title: 'manage_permission',
+          i18nKey: 'route.manage_permission'
+        }
+      },
+      {
+        name: 'manage_role',
+        path: '/manage/role',
+        component: 'view.manage_role',
+        meta: {
+          title: 'manage_role',
+          i18nKey: 'route.manage_role'
+        }
+      },
+      {
+        name: 'manage_user',
+        path: '/manage/user',
+        component: 'view.manage_user',
+        meta: {
+          title: 'manage_user',
+          i18nKey: 'route.manage_user'
+        }
+      }
+    ]
   },
   {
     name: 'profile',
@@ -100,24 +129,6 @@ export const generatedRoutes: GeneratedRoute[] = [
     meta: {
       title: 'profile',
       i18nKey: 'route.profile'
-    }
-  },
-  {
-    name: 'roles',
-    path: '/roles',
-    component: 'layout.base$view.roles',
-    meta: {
-      title: 'roles',
-      i18nKey: 'route.roles'
-    }
-  },
-  {
-    name: 'users',
-    path: '/users',
-    component: 'layout.base$view.users',
-    meta: {
-      title: 'users',
-      i18nKey: 'route.users'
     }
   }
 ];

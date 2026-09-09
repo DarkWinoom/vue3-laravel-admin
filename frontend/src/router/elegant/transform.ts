@@ -169,11 +169,12 @@ const routeMap: RouteMap = {
   "home": "/home",
   "iframe-page": "/iframe-page/:url",
   "login": "/login/:module(pwd-login|code-login|register|reset-pwd|bind-wechat)?",
-  "menus": "/menus",
-  "permissions": "/permissions",
-  "profile": "/profile",
-  "roles": "/roles",
-  "users": "/users"
+  "manage": "/manage",
+  "manage_menu": "/manage/menu",
+  "manage_permission": "/manage/permission",
+  "manage_role": "/manage/role",
+  "manage_user": "/manage/user",
+  "profile": "/profile"
 };
 
 /**

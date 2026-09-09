@@ -20,7 +20,7 @@ final class InitializationTest extends TestCase
         $this->assertDatabaseCount('users', 1);
         $this->assertDatabaseCount('roles', 1);
         $this->assertDatabaseCount('permissions', 16);
-        $this->assertDatabaseCount('menus', 4);
+        $this->assertDatabaseCount('menus', 5);
         $this->expectException(ApiException::class);
         app(InitializeAdmin::class)->handle('second@example.test', 'Second', 'Second-admin-test-password!');
     }

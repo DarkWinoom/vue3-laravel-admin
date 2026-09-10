@@ -1,5 +1,5 @@
 import { spawn, spawnSync } from 'node:child_process';
-import { existsSync, mkdtempSync, realpathSync, readdirSync, rmSync, cpSync, mkdirSync } from 'node:fs';
+import { existsSync, readFileSync, mkdtempSync, realpathSync, readdirSync, rmSync, cpSync, mkdirSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import assert from 'node:assert/strict';
@@ -51,6 +51,17 @@ try {
     binary = '/usr/bin/vue3-laravel-admin';
   }
   assert.ok(existsSync(binary), 'Installed binary missing');
+  const installedFiles = linuxPackage
+    ? spawnSync('dpkg', ['-L', linuxPackage], { encoding: 'utf8' }).stdout.trim().split('\n')
+    : files(install);
+  for (const [name, source] of [
+    ['LICENSE.txt', 'LICENSE'],
+    ['SOYBEAN-LICENSE.txt', 'frontend/LICENSE']
+  ]) {
+    const notice = installedFiles.find(file => path.basename(file) === name);
+    assert.ok(notice, 'Missing packaged license: ' + name);
+    assert.deepEqual(readFileSync(notice), readFileSync(path.join(root, source)));
+  }
   app = spawn(binary, [], { stdio: 'inherit', windowsHide: true });
   let startError;
   app.on('error', error => {

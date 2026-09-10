@@ -80,7 +80,12 @@ async function click(text, deferred = false) {
 }
 async function attach() {
   await wait(async () => (await fetch(driver + '/status')).ok, 'Update test driver unavailable');
-  session = (await command('POST', '/session', { capabilities: { alwaysMatch: { browserName: 'tauri' } } })).sessionId;
+  session = (
+    await wait(
+      () => command('POST', '/session', { capabilities: { alwaysMatch: { browserName: 'tauri' } } }),
+      'Updater window did not start'
+    )
+  ).sessionId;
   await wait(() => evaluate('return Boolean(window.__TAURI_INTERNALS__)'), 'Tauri not ready');
 }
 async function showUpdates() {

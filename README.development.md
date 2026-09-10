@@ -246,7 +246,7 @@ CI 目标为 Windows x86_64（NSIS exe）、macOS Apple Silicon（dmg）和 Linu
 
 ## 自动化检查与依赖同步
 
-`ci.yml` 对 main、codex 分支、PR 和手动运行执行检查。质量任务覆盖类型、lint、格式、Pint、PHPStan、Node/SQLite/MySQL、OpenAPI 漂移、浏览器 E2E 和 Web 构建；三个原生任务各自编译、运行 WebView 业务与签名升级测试，生成生产包并验证安装、启动和卸载。PR 不读取签名私钥。失败时保留浏览器报告或原生截图，成功产物附带校验和及依赖许可记录。
+`ci.yml` 对 main、codex 分支、PR 和手动运行执行检查。质量任务覆盖类型、lint、格式、Pint、PHPStan、Node/SQLite/MySQL、OpenAPI 漂移、浏览器 E2E 和 Web 构建；三个原生任务各自编译、运行 WebView 业务与签名升级测试，生成生产包并验证安装、启动和卸载。PR 不读取签名私钥。失败时保留浏览器报告或原生截图，成功产物附带校验和及依赖许可记录，安装包内同时保留项目与 Soybean 的许可证文件。
 
 ```sh
 pnpm --dir frontend exec playwright install chromium

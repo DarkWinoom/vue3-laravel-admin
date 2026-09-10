@@ -103,7 +103,10 @@ try {
     const r = await fetch(driver + '/status');
     return r.ok;
   }, 'Native WebDriver did not start');
-  const created = await command('POST', '/session', { capabilities: { alwaysMatch: { browserName: 'tauri' } } });
+  const created = await wait(
+    () => command('POST', '/session', { capabilities: { alwaysMatch: { browserName: 'tauri' } } }),
+    'Native window did not start'
+  );
   session = created.sessionId;
   assert.ok(session);
   await wait(() => script('return Boolean(window.__TAURI_INTERNALS__);'), 'Tauri WebView did not initialize');

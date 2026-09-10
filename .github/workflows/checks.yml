@@ -2,6 +2,9 @@ name: Reusable project checks
 on:
   workflow_call:
     inputs:
+      portability:
+        type: boolean
+        default: false
       ref:
         type: string
         default: ''
@@ -75,6 +78,9 @@ jobs:
       - run: pnpm check
       - run: pnpm test
       - run: pnpm api:check
+      - name: Isolated derived application
+        if: inputs.portability
+        run: node scripts/project-fixture.mjs
       - run: pnpm check:desktop
       - name: Native test build
         run: node scripts/desktop.mjs build --mode testing --api http://127.0.0.1:8021 --debug --no-bundle --features desktop-e2e

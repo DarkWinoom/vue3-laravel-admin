@@ -80,6 +80,15 @@ test('basic builds ignore inherited signing environment; updater-enabled release
   assert.equal(signed.config.plugins.updater.pubkey, 'new-public-key');
   assert.equal(signed.config.plugins.updater.endpoints[0], settings.updateEndpoint);
   assert.equal(signed.config.bundle.createUpdaterArtifacts, true);
+  assert.throws(
+    () =>
+      desktopConfig({
+        settings: { ...settings, releaseMode: 'updater', updaterPublicKey: 'current-key' },
+        version: '1.0.0',
+        signing: { DESKTOP_UPDATER_PUBLIC_KEY: 'old-key' }
+      }),
+    /differs/
+  );
 });
 
 test('fresh derived repository releases from a non-main branch without historical Actions runs', () => {
@@ -154,6 +163,20 @@ test('fresh derived repository releases from a non-main branch without historica
     assert.match(run('release-source.mjs', [], github), /default branch develop/);
     assert.match(readFileSync(output, 'utf8'), /mode=basic/);
     assert.match(run('release-check.mjs', [], github), /basic/);
+    symlinkSync(path.join(root, 'frontend/node_modules'), path.join(repo, 'frontend/node_modules'), 'junction');
+    const initialized = run('project-init.mjs', ['--offline', '--updater'], github);
+    const updater = JSON.parse(readFileSync(path.join(repo, 'desktop.json')));
+    const keyPath = path.join(repo, '.release-keys', updater.identifier + '.key');
+    const backup = readFileSync(keyPath);
+    assert.equal(updater.releaseMode, 'updater');
+    assert.ok(updater.updaterPublicKey);
+    assert.ok(!initialized.includes(backup.toString().trim()));
+    run('project-init.mjs', ['--offline', '--updater'], github);
+    assert.deepEqual(readFileSync(keyPath), backup);
+    rmSync(keyPath);
+    assert.throws(() => run('project-init.mjs', ['--offline', '--updater'], github));
+    assert.equal(JSON.parse(readFileSync(path.join(repo, 'desktop.json'))).updaterPublicKey, updater.updaterPublicKey);
+    writeFileSync(path.join(repo, 'desktop.json'), JSON.stringify(settings));
     assert.throws(() => run('release-source.mjs', [], { ...github, GITHUB_REF: 'refs/heads/main' }));
     assert.throws(() => run('release-source.mjs', [], { ...github, RELEASE_TAG: 'v0.0.1' }));
 

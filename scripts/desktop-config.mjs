@@ -26,7 +26,15 @@ export function desktopConfig({ mode = 'production', release = false, values = {
     mode === 'testing' ? { DEV_FRONTEND_PORT: '9531', DEV_BACKEND_PORT: '8011', ...values } : values
   );
   const api = values.DESKTOP_API_URL ? validateApiUrl(values.DESKTOP_API_URL, local) : local ? ports.apiUrl : '';
+  if (!['basic', 'updater'].includes(settings.releaseMode)) throw new Error('Invalid release mode');
   const updates = settings.releaseMode === 'updater';
+  if (
+    updates &&
+    settings.updaterPublicKey?.trim() &&
+    signing.DESKTOP_UPDATER_PUBLIC_KEY?.trim() &&
+    settings.updaterPublicKey.trim() !== signing.DESKTOP_UPDATER_PUBLIC_KEY.trim()
+  )
+    throw new Error('Configured updater public key differs from DESKTOP_UPDATER_PUBLIC_KEY');
   const pubkey = updates ? signing.DESKTOP_UPDATER_PUBLIC_KEY?.trim() || settings.updaterPublicKey?.trim() || '' : '';
   if (release && updates && (!signing.TAURI_SIGNING_PRIVATE_KEY || !pubkey))
     throw new Error('签名发布需要 TAURI_SIGNING_PRIVATE_KEY 和 DESKTOP_UPDATER_PUBLIC_KEY');

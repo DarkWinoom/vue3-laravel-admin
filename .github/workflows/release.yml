@@ -140,9 +140,12 @@ jobs:
           SOURCE_SHA: ${{ needs.verify.outputs.sha }}
           RELEASE_TAG: ${{ needs.verify.outputs.tag }}
         run: |
-          if gh release view "$RELEASE_TAG" --json isDraft > /tmp/release.json 2>/dev/null; then
-            node -e "if(!require('/tmp/release.json').isDraft) throw new Error('Published releases are immutable')"
+          git fetch --no-tags origin "refs/tags/$RELEASE_TAG:refs/tags/$RELEASE_TAG"
+          test "$(git rev-parse "$RELEASE_TAG^{commit}")" = "$SOURCE_SHA"
+          if gh release view "$RELEASE_TAG" --json isDraft,assets > /tmp/release.json 2>/dev/null; then
+            node -e "const r=require('/tmp/release.json');if(!r.isDraft) throw new Error('Published releases are immutable');const stale=r.assets.filter(a=>!require('fs').existsSync('.release-artifacts/'+a.name));if(stale.length)throw new Error('Draft contains additional assets. Review them manually before retrying: '+stale.map(a=>a.name).join(', '))"
             gh release upload "$RELEASE_TAG" .release-artifacts/* --clobber
+            gh release edit "$RELEASE_TAG" --notes-file .release-artifacts/release-notes.md
           else
             gh release create "$RELEASE_TAG" .release-artifacts/* --draft --verify-tag --target "$SOURCE_SHA" --title "$RELEASE_TAG" --notes-file .release-artifacts/release-notes.md
           fi

@@ -4,6 +4,11 @@ on:
     branches: ['**']
   pull_request:
   workflow_dispatch:
+    inputs:
+      portability:
+        description: Test an isolated derived application with basic releases
+        type: boolean
+        default: false
 permissions:
   contents: read
 concurrency:
@@ -12,3 +17,5 @@ concurrency:
 jobs:
   checks:
     uses: ./.github/workflows/checks.yml
+    with:
+      portability: ${{ inputs.portability == true }}

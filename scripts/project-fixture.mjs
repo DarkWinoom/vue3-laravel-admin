@@ -7,6 +7,8 @@ import { appSettings } from './desktop-config.mjs';
 if (process.env.GITHUB_ACTIONS !== 'true') throw new Error('Portable acceptance fixture runs only in Actions');
 const { version } = appSettings();
 const settings = initializeSettings({}, repositoryContext(), { name: 'Portable Admin Acceptance' });
+// A production key must not leak into basic builds or isolated updater tests.
+settings.updaterPublicKey = 'production-key-isolation-fixture';
 await synchronizeNative(settings, version);
 writeFileSync('desktop.json', JSON.stringify(settings, null, 2) + '\n');
 console.log('Testing derived basic-release application ' + settings.identifier + ' with binary ' + settings.binaryName);

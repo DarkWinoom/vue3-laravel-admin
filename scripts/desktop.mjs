@@ -19,7 +19,11 @@ if (e2e && (mode !== 'testing' || !args.includes('--debug')))
   throw new Error('desktop-e2e requires testing mode and --debug');
 const app = appSettings();
 // Isolated updater tests also run for projects using basic releases.
-if (e2e && process.env.DESKTOP_E2E_UPDATER_ENDPOINT) app.settings.releaseMode = 'updater';
+if (e2e && process.env.DESKTOP_E2E_UPDATER_ENDPOINT) {
+  app.settings.releaseMode = 'updater';
+  // Never compare the isolated test key with the application's production key.
+  app.settings.updaterPublicKey = '';
+}
 if (e2e && process.env.DESKTOP_E2E_VERSION) app.version = process.env.DESKTOP_E2E_VERSION;
 const { config, env } = desktopConfig({
   mode,

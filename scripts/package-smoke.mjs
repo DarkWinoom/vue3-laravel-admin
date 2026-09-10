@@ -66,7 +66,11 @@ try {
   ]) {
     const notice = installedFiles.find(file => path.basename(file) === name);
     assert.ok(notice, 'Missing packaged license: ' + name);
-    assert.deepEqual(readFileSync(notice), readFileSync(path.join(root, source)));
+    assert.equal(
+      readFileSync(notice, 'utf8').replaceAll('\r\n', '\n'),
+      readFileSync(path.join(root, source), 'utf8').replaceAll('\r\n', '\n'),
+      'Packaged license content differs: ' + name
+    );
   }
   app = spawn(binary, [], { stdio: 'inherit', windowsHide: true });
   let startError;

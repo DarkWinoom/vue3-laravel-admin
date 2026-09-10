@@ -1,0 +1,10 @@
+import { readFileSync, writeFileSync } from 'node:fs';
+import { synchronizeNative } from './project-init.mjs';
+const version = process.argv[2];
+if (!/^\d+\.\d+\.\d+(-[0-9A-Za-z.-]+)?$/.test(version || '')) throw new Error('Use pnpm project:version <semver>');
+const pkg = JSON.parse(readFileSync('package.json', 'utf8'));
+const settings = JSON.parse(readFileSync('desktop.json', 'utf8'));
+await synchronizeNative(settings, version);
+pkg.version = version;
+writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
+console.log('Version synchronized to ' + version + '. Review, commit and push before creating v' + version + '.');

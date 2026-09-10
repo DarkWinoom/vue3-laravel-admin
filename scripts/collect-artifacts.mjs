@@ -1,9 +1,14 @@
 import { readdirSync, existsSync, copyFileSync, mkdirSync, writeFileSync, readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
-import { spawnSync } from 'node:child_process';
+import { execFileSync, spawnSync } from 'node:child_process';
 import path from 'node:path';
 import { appSettings } from './desktop-config.mjs';
-const { version } = appSettings();
+import { repositoryContext } from './repository.mjs';
+import { nativeMetadata } from './native-metadata.mjs';
+const { version, settings } = appSettings();
+const signed =
+  process.argv.includes('--signed') || (process.argv.includes('--release') && settings.releaseMode === 'updater');
+const native = nativeMetadata();
 const platform = process.platform === 'win32' ? 'windows' : process.platform === 'darwin' ? 'darwin' : 'linux';
 const arch = process.arch === 'arm64' ? 'aarch64' : 'x86_64';
 const key = platform + '-' + arch;
@@ -16,11 +21,13 @@ function files(dir) {
       )
     : [];
 }
-const source = files('frontend/src-tauri/target/release/bundle').filter(p =>
-  /\.(exe|msi|dmg|deb|AppImage|app\.tar\.gz)(\.sig)?$/.test(p)
+const source = files(path.join(native.target, 'release/bundle')).filter(
+  p =>
+    /\.(exe|msi|dmg|deb|AppImage|app\.tar\.gz)(\.sig)?$/.test(p) &&
+    (signed || (!p.endsWith('.sig') && !p.endsWith('.app.tar.gz')))
 );
 if (!source.length) throw new Error('No desktop packages were produced');
-if (process.argv.includes('--signed') && platform === 'linux') {
+if (signed && platform === 'linux') {
   for (const file of source.filter(p => p.endsWith('.deb'))) {
     if (!existsSync(file + '.sig')) {
       const signed = spawnSync(
@@ -55,10 +62,24 @@ for (const name of assets.filter(n => n.endsWith('.sig'))) {
     if (platform === 'linux') updates[key + '-appimage'] = update;
   }
 }
-if (process.argv.includes('--signed') && !update) throw new Error('Missing signed updater artifact for ' + key);
+if (signed && !update) throw new Error('Missing signed updater artifact for ' + key);
 writeFileSync(
   path.join(destination, 'build-' + key + '.json'),
-  JSON.stringify({ version, platform: key, assets, update, updates }, null, 2) + '\n'
+  JSON.stringify(
+    {
+      version,
+      platform: key,
+      assets,
+      update,
+      updates,
+      identifier: settings.identifier,
+      repository: repositoryContext().repository,
+      releaseMode: signed ? 'updater' : 'basic',
+      sha: execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim()
+    },
+    null,
+    2
+  ) + '\n'
 );
 writeFileSync(
   path.join(destination, 'checksums-' + key + '.txt'),

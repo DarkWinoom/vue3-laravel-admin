@@ -5,4 +5,8 @@ if (process.env.RELEASE_TAG !== 'v' + version) throw new Error('Release tag must
 desktopConfig({ settings, version, release: true, signing: process.env });
 if (readFileSync('frontend/src-tauri/Cargo.toml', 'utf8').includes('default = ["desktop-e2e"]'))
   throw new Error('Native test feature cannot be a default');
-console.log('Release version and required signing configuration validated.');
+const cargoVersion = readFileSync('frontend/src-tauri/Cargo.toml', 'utf8').match(/^version\s*=\s*"([^"]+)"/m)?.[1];
+const tauri = JSON.parse(readFileSync('frontend/src-tauri/tauri.conf.json', 'utf8'));
+if (cargoVersion !== version || tauri.version !== version)
+  throw new Error('Run pnpm project:version <version> to synchronize desktop versions');
+console.log('Release version and ' + settings.releaseMode + ' configuration validated.');

@@ -1,5 +1,13 @@
 {
   "productName": "Vue3 Laravel Admin",
   "identifier": "com.github.darkwinoom.vue3laraveladmin",
-  "updateEndpoint": "https://github.com/DarkWinoom/vue3-laravel-admin/releases/latest/download/latest.json"
+  "updateEndpoint": "",
+  "repository": {
+    "name": "DarkWinoom/vue3-laravel-admin",
+    "id": "1349719089",
+    "server": "https://github.com"
+  },
+  "releaseMode": "updater",
+  "releaseEnvironment": "desktop-release",
+  "updaterPublicKey": ""
 }

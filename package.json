@@ -41,7 +41,9 @@
     "test:e2e": "node scripts/backend.mjs test:seed && pnpm --dir frontend exec playwright test",
     "ci:env": "node scripts/ci-env.mjs",
     "test:desktop": "node scripts/native-e2e.mjs",
-    "upstream:check": "node scripts/upstream-check.mjs"
+    "upstream:check": "node scripts/upstream-check.mjs",
+    "project:init": "node scripts/project-init.mjs",
+    "project:version": "node scripts/project-version.mjs"
   },
   "devDependencies": {
     "concurrently": "9.2.1",

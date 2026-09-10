@@ -10,27 +10,37 @@ on:
         type: string
 permissions:
   contents: read
-  actions: read
 concurrency:
   group: release-${{ github.ref }}-${{ inputs.tag }}
   cancel-in-progress: false
 jobs:
   verify:
     runs-on: ubuntu-24.04
+    outputs:
+      sha: ${{ steps.source.outputs.sha }}
+      tag: ${{ steps.source.outputs.tag }}
+      mode: ${{ steps.source.outputs.mode }}
+      environment: ${{ steps.source.outputs.environment }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ inputs.tag || github.ref }}
+          fetch-depth: 0
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 24.19.0
-      - run: node scripts/release-source.mjs
+      - id: source
+        run: node scripts/release-source.mjs
         env:
-          GH_TOKEN: ${{ github.token }}
-  build:
+          RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
+  checks:
     needs: verify
-    environment: desktop-release
-    if: github.event_name == 'push' || github.ref == 'refs/heads/main'
+    uses: ./.github/workflows/checks.yml
+    with:
+      ref: ${{ needs.verify.outputs.sha }}
+  build:
+    needs: [verify, checks]
+    environment: ${{ needs.verify.outputs.environment }}
     strategy:
       fail-fast: false
       matrix:
@@ -49,12 +59,12 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: ${{ inputs.tag || github.ref }}
+          ref: ${{ needs.verify.outputs.sha }}
       - uses: ./.github/actions/setup
       - name: Validate release
         run: node scripts/release-check.mjs
         env:
-          RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
+          RELEASE_TAG: ${{ needs.verify.outputs.tag }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           DESKTOP_UPDATER_PUBLIC_KEY: ${{ secrets.DESKTOP_UPDATER_PUBLIC_KEY }}
       - name: Linux system libraries
@@ -67,11 +77,7 @@ jobs:
           workspaces: frontend/src-tauri
           shared-key: desktop-${{ runner.os }}
           cache-on-failure: true
-          save-if: ${{ github.ref == 'refs/heads/main' }}
-      - run: pnpm check
-      - run: pnpm test
-      - run: pnpm api:check
-      - run: pnpm check:desktop
+          save-if: ${{ github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}
       - name: Optional Windows system signing
         if: runner.os == 'Windows'
         shell: pwsh
@@ -80,7 +86,7 @@ jobs:
           WINDOWS_CERTIFICATE: ${{ secrets.WINDOWS_CERTIFICATE }}
           WINDOWS_CERTIFICATE_PASSWORD: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
           WINDOWS_TIMESTAMP_URL: ${{ vars.WINDOWS_TIMESTAMP_URL }}
-      - name: Signed updater packages
+      - name: Build configured release packages
         run: node scripts/desktop.mjs build --release --bundles ${{ matrix.bundles }}
         env:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
@@ -96,45 +102,47 @@ jobs:
         if: always() && runner.os == 'Windows'
         shell: pwsh
         run: ./scripts/windows-signing.ps1 -Cleanup
-      - run: node scripts/collect-artifacts.mjs --signed
+      - run: node scripts/collect-artifacts.mjs --release
         env:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: signed-${{ matrix.name }}
+          name: release-${{ matrix.name }}
           path: .release-artifacts/
           include-hidden-files: true
           if-no-files-found: error
   draft:
-    needs: build
+    needs: [verify, build]
     runs-on: ubuntu-24.04
     permissions:
       contents: write
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: ${{ inputs.tag || github.ref }}
+          ref: ${{ needs.verify.outputs.sha }}
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 24.19.0
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
-          pattern: signed-*
+          pattern: release-*
           path: .release-artifacts
           merge-multiple: true
       - run: node scripts/release-manifest.mjs
         env:
-          RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
+          RELEASE_TAG: ${{ needs.verify.outputs.tag }}
       - name: Create or update draft only
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
-          RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
+          GH_REPO: ${{ github.repository }}
+          SOURCE_SHA: ${{ needs.verify.outputs.sha }}
+          RELEASE_TAG: ${{ needs.verify.outputs.tag }}
         run: |
           if gh release view "$RELEASE_TAG" --json isDraft > /tmp/release.json 2>/dev/null; then
             node -e "if(!require('/tmp/release.json').isDraft) throw new Error('Published releases are immutable')"
             gh release upload "$RELEASE_TAG" .release-artifacts/* --clobber
           else
-            gh release create "$RELEASE_TAG" .release-artifacts/* --draft --target "$GITHUB_SHA" --title "$RELEASE_TAG" --notes-file .release-artifacts/release-notes.md
+            gh release create "$RELEASE_TAG" .release-artifacts/* --draft --verify-tag --target "$SOURCE_SHA" --title "$RELEASE_TAG" --notes-file .release-artifacts/release-notes.md
           fi

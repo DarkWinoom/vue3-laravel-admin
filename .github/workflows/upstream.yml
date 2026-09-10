@@ -28,9 +28,13 @@ jobs:
             upstream-candidate.json
           if-no-files-found: ignore
       - name: Open a single review proposal
+        id: proposal
+        continue-on-error: true
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
         run: |
           test -f upstream-candidate.json || exit 0
           existing=$(gh pr list --state open --label upstream-sync --json number --jq length)
@@ -46,4 +50,7 @@ jobs:
           git push origin "$branch"
           gh label create upstream-sync --color 7057ff --description "Pinned upstream review proposal" --force
           printf '%s\n' '检测到上游分支变化。本 PR 仅记录候选 SHA，不修改应用代码，也不推进 upstream.json 基线。' '' '请先审阅本次工作流的 upstream-diff 产物，再选择性移植、处理冲突并运行项目检查。' > /tmp/upstream-body.md
-          gh pr create --draft --base main --head "$branch" --label upstream-sync --title "chore: review upstream changes" --body-file /tmp/upstream-body.md
+          gh pr create --draft --base "$DEFAULT_BRANCH" --head "$branch" --label upstream-sync --title "chore: review upstream changes" --body-file /tmp/upstream-body.md
+      - name: Manual proposal fallback
+        if: steps.proposal.outcome == 'failure'
+        run: node -e "require('fs').appendFileSync(process.env.GITHUB_STEP_SUMMARY, '自动创建同步草稿失败，请查看 proposal 步骤日志。若仓库或组织不允许 Actions 创建 PR，可下载本次 upstream-diff 产物手动审查；无需修改权限也能使用项目构建和 Release。\n')"

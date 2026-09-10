@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { developmentConfig } from './env.mjs';
+import { repositoryContext, resolveProject } from './repository.mjs';
 
 export function validateApiUrl(value, allowLocal = false) {
   const url = new URL(value);
@@ -25,8 +26,9 @@ export function desktopConfig({ mode = 'production', release = false, values = {
     mode === 'testing' ? { DEV_FRONTEND_PORT: '9531', DEV_BACKEND_PORT: '8011', ...values } : values
   );
   const api = values.DESKTOP_API_URL ? validateApiUrl(values.DESKTOP_API_URL, local) : local ? ports.apiUrl : '';
-  const pubkey = signing.DESKTOP_UPDATER_PUBLIC_KEY?.trim() || '';
-  if (release && (!signing.TAURI_SIGNING_PRIVATE_KEY || !pubkey))
+  const updates = settings.releaseMode === 'updater';
+  const pubkey = updates ? signing.DESKTOP_UPDATER_PUBLIC_KEY?.trim() || settings.updaterPublicKey?.trim() || '' : '';
+  if (release && updates && (!signing.TAURI_SIGNING_PRIVATE_KEY || !pubkey))
     throw new Error('签名发布需要 TAURI_SIGNING_PRIVATE_KEY 和 DESKTOP_UPDATER_PUBLIC_KEY');
   const windowsSigning = signing.DESKTOP_WINDOWS_CERT_THUMBPRINT
     ? {
@@ -79,7 +81,7 @@ export function desktopConfig({ mode = 'production', release = false, values = {
         ],
         security: { csp, devCsp: csp }
       },
-      bundle: { createUpdaterArtifacts: release, ...(windowsSigning ? { windows: windowsSigning } : {}) },
+      bundle: { createUpdaterArtifacts: release && updates, ...(windowsSigning ? { windows: windowsSigning } : {}) },
       ...(pubkey
         ? { plugins: { updater: { pubkey, endpoints: [endpoint.href], windows: { installMode: 'passive' } } } }
         : {})
@@ -102,7 +104,10 @@ export function desktopConfig({ mode = 'production', release = false, values = {
 
 export function appSettings() {
   return {
-    settings: JSON.parse(readFileSync(new URL('../desktop.json', import.meta.url), 'utf8')),
+    settings: resolveProject(
+      JSON.parse(readFileSync(new URL('../desktop.json', import.meta.url), 'utf8')),
+      repositoryContext()
+    ),
     version: JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8')).version
   };
 }

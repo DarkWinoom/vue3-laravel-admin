@@ -1,3 +1,4 @@
+import { nativeMetadata } from './native-metadata.mjs';
 import { spawn, spawnSync } from 'node:child_process';
 import { existsSync, readFileSync, mkdtempSync, realpathSync, readdirSync, rmSync, cpSync, mkdirSync } from 'node:fs';
 import os from 'node:os';
@@ -5,6 +6,7 @@ import path from 'node:path';
 import assert from 'node:assert/strict';
 import { root } from './env.mjs';
 
+const native = nativeMetadata();
 const temporaryRoot = realpathSync(os.tmpdir());
 const temporary = mkdtempSync(path.join(temporaryRoot, 'vue3-package-'));
 let app;
@@ -19,7 +21,7 @@ function files(directory) {
     e.isDirectory() ? files(path.join(directory, e.name)) : [path.join(directory, e.name)]
   );
 }
-const bundle = path.join(root, 'frontend/src-tauri/target/release/bundle');
+const bundle = path.join(native.target, 'release/bundle');
 const mount = path.join(temporary, 'mounted');
 const install = path.join(temporary, 'installed');
 try {
@@ -28,7 +30,7 @@ try {
     const installer = files(path.join(bundle, 'nsis')).find(p => p.endsWith('.exe'));
     assert.ok(installer);
     run(installer, ['/S', '/D=' + install]);
-    binary = path.join(install, 'vue3-laravel-admin.exe');
+    binary = path.join(install, native.binary + '.exe');
   } else if (process.platform === 'darwin') {
     const dmg = files(path.join(bundle, 'dmg')).find(p => p.endsWith('.dmg'));
     assert.ok(dmg);
@@ -48,7 +50,7 @@ try {
     linuxPackage = spawnSync('dpkg-deb', ['-f', deb, 'Package'], { encoding: 'utf8' }).stdout.trim();
     assert.match(linuxPackage, /^[a-z0-9][a-z0-9+.-]+$/);
     run('sudo', ['dpkg', '-i', deb]);
-    binary = '/usr/bin/vue3-laravel-admin';
+    binary = '/usr/bin/' + native.binary;
   }
   assert.ok(existsSync(binary), 'Installed binary missing');
   const installedFiles = linuxPackage

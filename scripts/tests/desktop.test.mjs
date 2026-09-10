@@ -4,6 +4,7 @@ import { desktopConfig, validateApiUrl } from '../desktop-config.mjs';
 const settings = {
   productName: 'Vue3 Laravel Admin',
   identifier: 'com.github.darkwinoom.vue3laraveladmin',
+  releaseMode: 'updater',
   updateEndpoint: 'https://github.com/example/project/releases/latest/download/latest.json'
 };
 test('production desktop starts without a baked-in test API and has an explicit CSP', () => {

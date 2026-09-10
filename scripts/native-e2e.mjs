@@ -1,3 +1,4 @@
+import { nativeMetadata } from './native-metadata.mjs';
 import { spawn, spawnSync } from 'node:child_process';
 import { mkdtempSync, writeFileSync, mkdirSync, rmSync } from 'node:fs';
 import os from 'node:os';
@@ -7,6 +8,7 @@ import assert from 'node:assert/strict';
 import { randomBytes } from 'node:crypto';
 import { root, backendEnvironment } from './env.mjs';
 
+const native = nativeMetadata();
 const temporary = mkdtempSync(path.join(os.tmpdir(), 'vue3-native-'));
 const database = path.join(temporary, 'app_testing');
 writeFileSync(database, '');
@@ -92,10 +94,7 @@ try {
   await wait(async () => (await fetch('http://127.0.0.1:8021/api/v1/health')).ok, 'API did not start');
   const binary =
     process.env.DESKTOP_EXECUTABLE ||
-    path.join(
-      root,
-      'frontend/src-tauri/target/debug/vue3-laravel-admin' + (process.platform === 'win32' ? '.exe' : '')
-    );
+    path.join(native.target, 'debug', native.binary + (process.platform === 'win32' ? '.exe' : ''));
   children.push(
     spawn(binary, [], { env: { ...process.env, TAURI_WEBDRIVER_PORT: '4445' }, stdio: 'inherit', windowsHide: true })
   );

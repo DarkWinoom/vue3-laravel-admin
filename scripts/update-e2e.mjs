@@ -1,3 +1,4 @@
+import { nativeMetadata } from './native-metadata.mjs';
 import { spawn, spawnSync } from 'node:child_process';
 import {
   mkdtempSync,
@@ -21,6 +22,7 @@ import { root } from './env.mjs';
 
 const platform = process.platform === 'win32' ? 'windows' : process.platform === 'darwin' ? 'darwin' : 'linux';
 const platformKey = platform + '-' + (process.arch === 'arm64' ? 'aarch64' : 'x86_64');
+const native = nativeMetadata();
 const temporaryRoot = realpathSync(os.tmpdir());
 const temporary = mkdtempSync(path.join(temporaryRoot, 'vue3-update-'));
 const installDirectory = path.join(temporary, 'installed');
@@ -117,13 +119,13 @@ try {
   };
   const build = ['scripts/desktop.mjs', 'build', '--mode', 'testing', '--debug', '--features', 'desktop-e2e'];
   const bundleKind = platform === 'windows' ? 'nsis' : platform === 'darwin' ? 'app' : 'appimage';
-  const bundleRoot = path.join(root, 'frontend/src-tauri/target/debug/bundle');
+  const bundleRoot = path.join(native.target, 'debug/bundle');
   const originalArgs = platform === 'windows' ? ['--no-bundle'] : ['--bundles', bundleKind];
   run([...build, ...originalArgs], { ...env, DESKTOP_E2E_VERSION: '0.1.0' });
   let original;
   if (platform === 'windows') {
-    original = path.join(temporary, 'vue3-laravel-admin.exe');
-    copyFileSync(path.join(root, 'frontend/src-tauri/target/debug/vue3-laravel-admin.exe'), original);
+    original = path.join(temporary, native.binary + '.exe');
+    copyFileSync(path.join(native.target, 'debug', native.binary + '.exe'), original);
   } else if (platform === 'darwin') {
     const app = readdirSync(path.join(bundleRoot, 'macos')).find(p => p.endsWith('.app'));
     assert.ok(app);
@@ -183,7 +185,7 @@ try {
     async () => downloads.includes('missing') && (await bodyText()).includes('下载、签名校验或安装失败'),
     'Download failure was not reported'
   );
-  assert.ok(!existsSync(path.join(installDirectory, 'vue3-laravel-admin.exe')));
+  assert.ok(!existsSync(path.join(installDirectory, native.binary + '.exe')));
   responseMode = 'tampered';
   await click('下载并安装');
   await wait(
@@ -193,12 +195,12 @@ try {
       !(await bodyText()).includes('重启完成更新'),
     'Tampered update was not rejected'
   );
-  assert.ok(!existsSync(path.join(installDirectory, 'vue3-laravel-admin.exe')));
+  assert.ok(!existsSync(path.join(installDirectory, native.binary + '.exe')));
   responseMode = 'valid';
   await click('下载并安装');
   if (platform === 'windows') {
     await wait(
-      () => existsSync(path.join(installDirectory, 'vue3-laravel-admin.exe')),
+      () => existsSync(path.join(installDirectory, native.binary + '.exe')),
       'Valid signed update did not install',
       120000
     );
@@ -246,7 +248,7 @@ try {
       else child.kill('SIGTERM');
     }
   if (platform === 'windows') {
-    const installed = path.join(installDirectory, 'vue3-laravel-admin.exe');
+    const installed = path.join(installDirectory, native.binary + '.exe');
     const escaped = installed.replaceAll("'", "''");
     spawnSync(
       'powershell.exe',

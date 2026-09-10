@@ -214,8 +214,10 @@ try {
     async () => (await script('return document.body.innerText;')).includes('Browser Viewer'),
     'Viewer login failed'
   );
-  const body = await script('return document.body.innerText;');
-  assert.ok(body.includes('用户总数'));
+  const body = await wait(async () => {
+    const text = await script('return document.body.innerText;');
+    return text.includes('用户总数') ? text : false;
+  }, 'Viewer dashboard did not finish loading');
   assert.ok(!body.includes('权限总数'));
   const sensitive = await script('return Object.keys(localStorage).filter(k=>/(?:token|refreshToken)$/i.test(k));');
   assert.deepEqual(sensitive, []);

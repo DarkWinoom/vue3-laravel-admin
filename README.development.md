@@ -242,11 +242,11 @@ pnpm check:desktop                # Web 构建、Rust 格式及 Clippy
 
 生产模式不接受 HTTP API；开发/测试只额外允许本机 HTTP。后端生产默认允许 APP_URL 和 `tauri://localhost`、`https://tauri.localhost`、`http://tauri.localhost`；若设置了 `AUTH_ALLOWED_ORIGINS`，必须在自定义列表中包含实际桌面来源。CSP 只允许本地脚本、字体及图标，连接允许 HTTPS 以支持首次配置服务；capabilities 仅提供更新、重启和 HTTPS 外链所需能力。
 
-CI 目标为 Windows x86_64（NSIS exe）、macOS Apple Silicon（dmg）和 Linux x86_64（AppImage/deb），其他架构未列入此矩阵。下载与检查记录在 [Actions](https://github.com/DarkWinoom/vue3-laravel-admin/actions/workflows/ci.yml)；草稿 Release 仅仓库有权限的验收者可见，普通用户应使用已发布的版本。
+CI 目标为 Windows x86_64（NSIS exe）、macOS Apple Silicon（dmg）和 Linux x86_64（AppImage/deb），其他架构未列入此矩阵。下载与检查记录在当前仓库的 **Actions → Quality and desktop**；草稿 Release 仅仓库有权限的验收者可见，普通用户应使用已发布的版本。
 
 ## 自动化检查与依赖同步
 
-`ci.yml` 对 main、codex 分支、PR 和手动运行执行检查。质量任务覆盖类型、lint、格式、Pint、PHPStan、Node/SQLite/MySQL、OpenAPI 漂移、浏览器 E2E 和 Web 构建；三个原生任务各自编译、运行 WebView 业务与签名升级测试，生成生产包并验证安装、启动和卸载。PR 不读取签名私钥。失败时保留浏览器报告或原生截图，成功产物附带校验和及依赖许可记录，安装包内同时保留项目与 Soybean 的许可证文件。
+`ci.yml` 对各分支的 push、PR 和手动运行执行检查，并复用仓库内的 `checks.yml`。质量任务覆盖类型、lint、格式、Pint、PHPStan、Node/SQLite/MySQL、OpenAPI 漂移、浏览器 E2E 和 Web 构建；三个原生任务各自编译、运行 WebView 业务与签名升级测试，生成生产包并验证安装、启动和卸载。PR 不读取签名私钥。手动运行 Quality and desktop 时可勾选 `portability`，在一次性 runner 中使用派生应用名称和独立二进制验证普通构建、签名测试及安装卸载；该模式的产物用于验收。失败时保留浏览器报告或原生截图，成功产物附带校验和及依赖许可记录，安装包内同时保留项目与 Soybean 的许可证文件。
 
 ```sh
 pnpm --dir frontend exec playwright install chromium
@@ -261,37 +261,119 @@ Linux 原生测试用 `xvfb-run -a node scripts/native-e2e.mjs`。测试应用�
 
 自动创建上游草稿 PR 需要在仓库 Settings → Actions → General 开启 “Allow GitHub Actions to create and approve pull requests”。GitHub 将创建和审批权限合并在此开关中；现有工作流只创建草稿，不审批或合并。默认工作流权限保持只读，由具体工作流声明所需权限。修改这项仓库权限前应获得仓库维护者授权。
 
-Dependabot 分别为根 pnpm、前端 pnpm、Composer、Cargo 和 Actions 创建更新 PR。上游工作流每周及手动检测 `upstream.json` 中的 tauri/example SHA；存在变化时保存二进制差异补丁，并创建仅含候选 SHA 的草稿 PR。它不应用补丁，也不推进基线。先审查差异，在自己的分支选择性移植并处理冲突，通过项目检查后再更新基线；关闭的同 SHA 提案不会重复创建。
+Dependabot 分别为根 pnpm、前端 pnpm、Composer、Cargo 和 Actions 创建更新 PR。上游工作流每周及手动检测 `upstream.json` 中的 tauri/example SHA；存在变化时保存二进制差异补丁，并尝试向当前默认分支创建仅含候选 SHA 的草稿 PR；失败时在工作流摘要提供手动审查入口，补丁产物仍可下载。它不应用补丁，也不推进基线。先审查差异，在自己的分支选择性移植并处理冲突，通过项目检查后再更新基线；关闭的同 SHA 提案不会重复创建。
 
-## 签名更新与草稿发布
+## 在自己的 GitHub 仓库发布
 
-更新使用 [Tauri updater](https://v2.tauri.app/plugin/updater/)，入口为“连接与更新 → 版本与更新”。界面显示版本说明、下载进度、失败重试和重启。Windows 安装器启动后会退出应用；macOS/Linux 安装完成后点击重启。没有配置公钥的普通构建关闭在线更新，仍可安装新版客户端。
+工作流随源码保存在当前仓库，不依赖原作者的 Actions 或历史运行记录。支持 GitHub.com 公开仓库的 fork、模板创建以及复制源码后推送到自己的仓库；默认分支名称不限。组织策略、Actions 启用状态和可用 runner 仍由仓库维护者管理。GitHub Enterprise Server 未列入三平台验收范围。
 
-维护者为自己的应用生成并安全备份更新密钥；不能把私钥、密码或真实 env 提交 Git。独立安装 skill 的使用者无需配置这些发布凭据。
+### 一次性初始化
 
-```sh
-pnpm --dir frontend exec tauri signer generate -w /secure/location/admin-updater.key
-```
-
-在 GitHub Actions Secrets 配置 `TAURI_SIGNING_PRIVATE_KEY`（私钥内容）、`DESKTOP_UPDATER_PUBLIC_KEY`（公钥内容），以及有密码时的 `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`。本机构建从进程环境读取这些变量，不从根 env 文件读取签名私钥；`node scripts/desktop.mjs build --release` 缺少必要密钥时在构建前失败。公钥会进入客户端，私钥只参与构建。保留原私钥才能向已安装的应用继续签发更新。
-
-发布工作流检查版本，构建完整三平台签名产物，生成 `latest.json`、SHA-256 校验文件和许可清单，只创建或更新**草稿** Release。任一平台失败不会执行草稿聚合，已公开的 Release 不允许覆盖。发布前核对三平台安装、服务连接、业务及签名升级；验收后由维护者公开草稿。默认更新地址指向仓库最新已公开 Release 的 `latest.json`，因此未公开草稿不会向普通客户端推送更新。
-
-系统代码签名与上述更新签名是两套独立机制。当前验收构建未配置 Windows 商业签名证书和 Apple Developer 签名/公证凭据，不能称为已完成系统签名或公证。公开发行前按 [Windows 签名](https://v2.tauri.app/distribute/sign/windows/) 与 [macOS 签名](https://v2.tauri.app/distribute/sign/macos/) 设置相应凭据和渠道要求。
-
-桌面常见问题：连接失败先检查服务的 HTTPS 证书、health 接口和来源白名单；版本检查失败核对更新地址、公钥与 Release 可见性；安装更新失败保留当前可用版本，核对签名及平台文件，不能关闭签名校验绕过。桌面版本回退通过安装经确认的旧安装包完成；服务端迁移仍按部署章节备份和恢复，客户端回退不会自动回退数据库。
-
-发布环境 `desktop-release` 限制 main 分支和 v\* 标签。升级根 `package.json.version` 后提交并推送 main，等待该提交的完整 CI 成功，再创建并推送同名版本标签：
+先创建自己的 GitHub 仓库，并让本地 `origin` 指向它。在业务仓库根目录完成初始化：
 
 ```sh
-git tag v0.1.1
-git push origin v0.1.1
+pnpm install --frozen-lockfile
+git remote set-url origin https://github.com/YOUR-OWNER/YOUR-REPO.git
+pnpm project:init --name "我的管理系统"
 ```
 
-示例版本需替换为实际版本；不覆盖已存在的发布 tag。手动运行 release.yml 时也需要先有 tag，工作流检出该 tag，而非把正在变化的 main 当作版本源码。
+`YOUR-OWNER/YOUR-REPO` 替换为自己的仓库。命令只修改本地配置；不会创建远端仓库、推送代码或修改仓库权限。安装并登录 GitHub CLI 时会读取仓库 ID，仓库改名后仍可识别同一应用；没有 CLI 也能按远端名称完成初始化。`--offline` 跳过仓库 API 查询，`--repository owner/repo` 可显式指定仓库，但仍需保证实际推送目标与其一致。
 
-可选系统签名：Windows 在 Secrets 提供 Base64 PFX `WINDOWS_CERTIFICATE` 和 `WINDOWS_CERTIFICATE_PASSWORD`，仓库变量 `WINDOWS_TIMESTAMP_URL` 填签名服务时间戳地址。工作流仅在 Windows runner 导入证书并在结束时移除。Apple 通过 `APPLE_CERTIFICATE`、`APPLE_CERTIFICATE_PASSWORD`、`APPLE_SIGNING_IDENTITY`、`APPLE_ID`、`APPLE_PASSWORD`、`APPLE_TEAM_ID` 注入签名和公证凭据。不提供这些凭据时生成未做系统签名/公证的验收包，Tauri 更新签名仍独立执行。
+新派生项目默认使用 **basic** 普通发布：生成独立应用标识和二进制名称，清除继承的更新公钥、端点覆盖和发布环境。重复运行保留本应用的标识、密钥及发布模式；应用名称可再通过 `--name` 调整。可在首次初始化时用 `--identifier com.example.admin` 指定标识，已经发行的应用不要重新生成标识或密钥。
 
-签名更新回归命令为 `node scripts/update-e2e.mjs`，使用临时测试密钥和 Test 应用安装目录，在 Windows NSIS、macOS app 和 Linux AppImage 中覆盖下载失败、篡改拒绝、0.1.0 → 0.1.1 安装及重启，结束后卸载并清理临时文件。Linux 同样在 xvfb-run 下执行。CI 不使用生产签名密钥运行此测试。
+初始化后提交 `desktop.json` 和发生变化的 Tauri/Cargo 配置。根 `package.json.version` 为版本来源；初始化和版本命令会同步 Tauri、Cargo.toml 与 Cargo.lock，输出符合项目格式规则。许可证和上游来源保持原样。
 
-Linux 更新清单分别提供 AppImage 与 deb 的签名条目，客户端按当前安装格式匹配。deb 更新可能要求操作系统授权安装；AppImage 更新要求所在目录可写。
+### 发布模式与配置
+
+| desktop.json 字段            | 作用                                                                     |
+| ---------------------------- | ------------------------------------------------------------------------ |
+| `productName` / `identifier` | 桌面名称与稳定应用身份                                                   |
+| `binaryName`                 | 派生项目独立二进制名称；未设置时沿用 Cargo/Tauri 名称                    |
+| `repository`                 | 初始化记录的仓库名称、可选 ID 和 GitHub 服务地址，防止误用其他应用身份   |
+| `releaseMode`                | `basic` 普通安装包；`updater` 安装包及签名在线更新                       |
+| `updaterPublicKey`           | 可提交的更新公钥，私钥放入 Secrets                                       |
+| `updateEndpoint`             | 留空时自动使用当前仓库的最新公开 Release；自建更新服务可覆盖为 HTTPS URL |
+| `releaseEnvironment`         | 留空不使用发布环境；需要人工审批或环境 Secrets 时填写已配置环境名称      |
+
+原项目保留已有标识、`updater` 模式和 `desktop-release` 保护环境，以兼容已有客户端。派生项目无需复制原仓库 Secrets。初始化之前执行桌面构建或发布会提示仓库绑定不匹配，应先完成初始化，避免将原版更新推送给定制应用。
+
+普通模式不需要更新密钥，不生成 `latest.json`，客户端关闭在线更新；通过安装新版更新。启用 updater 后，签名发布缺少私钥或公钥会失败，不会自动降级为普通发布。两种模式都生成三平台安装包、校验和及许可清单。
+
+生产 API 可继续留空，由用户首次启动填写 HTTPS 服务地址。GitHub 仓库信息不会被当作 API 地址。私有仓库可以运行 CI 和 Release，但私有 Release 无法被客户端匿名读取；需要公开分发渠道或带认证的更新服务，不能把 GitHub 访问令牌放进客户端。
+
+### 发布一个版本
+
+```sh
+pnpm project:version 0.1.2
+git add package.json desktop.json frontend/src-tauri
+git commit -m "chore: prepare desktop release"
+git push origin HEAD
+git tag v0.1.2
+git push origin v0.1.2
+```
+
+版本仅为示例，替换为下一个实际版本，不覆盖已有标签。先将源码提交推送到仓库默认分支，再推送与版本一致的 `v*` 标签。也可从默认分支手动运行 **Draft desktop release** 并填写已有标签。
+
+发布流程核对标签、版本和默认分支祖先关系，固定目标提交，调用仓库内 `checks.yml` 完成 Web/API/MySQL 与三平台原生检查后再构建发布包，不要求该 SHA 事先存在历史 CI 记录。所有平台成功且版本、源码 SHA、应用身份一致才会创建或更新**草稿 Release**；已公开 Release 不允许覆盖；草稿中存在本次构建未提供的额外附件时，停止覆盖并提示维护者手动审查，不自动删除附件。
+
+普通检查使用只读权限，发布草稿的任务申请 `contents: write`，通常无需额外 PAT。若组织策略禁止 Actions 写入，需要维护者调整策略或手动上传构建产物。fork 的 Actions 可能需要在仓库 Actions 页面首次启用。
+
+验收安装、连接服务和关键业务后，由维护者公开草稿。启用在线更新时还应验证真实签名升级。默认更新地址只读取最新公开 Release；草稿不会推送给普通客户端。仓库改名不会改变已安装客户端内的旧地址，应保留旧分发入口并安排一次更新地址迁移。
+
+## 签名更新与系统签名
+
+更新使用 [Tauri updater](https://v2.tauri.app/plugin/updater/)，入口为“连接与更新 → 版本与更新”。界面显示说明、下载进度、失败重试和重启。Windows 安装器启动后退出应用；macOS/Linux 安装完成后点击重启。
+
+### 首次启用自动更新
+
+先安装前端依赖，再为当前派生应用创建一次密钥：
+
+```sh
+pnpm --dir frontend install --frozen-lockfile
+pnpm project:init --updater
+```
+
+命令将公钥写入 `desktop.json`，私钥备份保存在 Git 忽略的 `.release-keys/<应用标识>.key`，并保留对应 `.pub` 文件。请另存一份安全备份。重复执行复用已有密钥；已启用 updater 却缺少备份时拒绝重新生成，防止旧客户端失去升级能力。
+
+在当前仓库 Settings → Secrets and variables → Actions 添加 `TAURI_SIGNING_PRIVATE_KEY`，值为私钥文件内容。新命令生成的密钥无密码；自行生成的加密密钥还需配置 `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`。历史项目仍支持使用 `DESKTOP_UPDATER_PUBLIC_KEY` Secret 提供公钥；使用该方式时保持它与提交的公钥一致。
+
+已登录且有仓库管理权限的 GitHub CLI 可代为上传新命令管理的密钥：
+
+```sh
+gh auth login
+pnpm project:init --updater --upload-secrets
+```
+
+`--upload-secrets` 明确授权写入所选仓库的更新私钥及空密码 Secret；有 `releaseEnvironment` 时写入该环境。它不创建保护规则、不调整仓库权限。上传失败会保留配置和本地备份，可修复权限后重试。已有加密密钥或原项目使用其他备份路径时，按手动 Secrets 方式维护，不用初始化命令轮换密钥。
+
+公钥可进入客户端，私钥及密码只能由进程环境或 Actions Secrets 注入，不从根 env 读取，不提交 Git，也不打印到构建日志。独立安装 skill 本身不需要这些凭据；只有需要发布自动更新的业务项目才需配置。
+
+### 发布保护与系统证书
+
+`releaseEnvironment` 可指定 GitHub Environment。保护规则和环境 Secrets 需维护者自行配置；仅填写环境名称不等于已经启用保护。可将来源限制为自己的默认分支和 `v*` 标签，并按需要求人工审批。现有原项目的保护环境继续沿用。
+
+Tauri 更新签名与操作系统代码签名相互独立。可选凭据：
+
+| 平台    | Actions 配置                                                                                                                        |
+| ------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| Windows | Secrets：Base64 PFX `WINDOWS_CERTIFICATE`、`WINDOWS_CERTIFICATE_PASSWORD`；变量：`WINDOWS_TIMESTAMP_URL`                            |
+| macOS   | Secrets：`APPLE_CERTIFICATE`、`APPLE_CERTIFICATE_PASSWORD`、`APPLE_SIGNING_IDENTITY`、`APPLE_ID`、`APPLE_PASSWORD`、`APPLE_TEAM_ID` |
+
+不提供系统凭据时仍能生成验收包，不能称为已完成系统签名或 Apple 公证。Windows runner 在任务结束时清理导入的证书。渠道要求见 [Windows 签名](https://v2.tauri.app/distribute/sign/windows/) 和 [macOS 签名](https://v2.tauri.app/distribute/sign/macos/)。
+
+### 验证与排障
+
+`node scripts/update-e2e.mjs` 使用临时测试密钥和独立 Test 应用，在 Windows NSIS、macOS app、Linux AppImage 中验证下载失败、篡改拒绝以及 0.1.0 → 0.1.1 安装重启；结束后卸载并清理。Linux 使用 xvfb-run。即使项目采用 basic 发布，CI 仍验证签名更新机制；测试不会使用正式私钥。
+
+Linux 正式更新清单分别提供 AppImage 与 deb 签名条目；deb 更新可能要求系统授权，AppImage 所在目录需可写。
+
+| 问题                | 处理                                                                          |
+| ------------------- | ----------------------------------------------------------------------------- |
+| 仓库身份不匹配      | 检查 origin，再运行 project:init；仓库改名时优先使用已登录 gh 获取稳定仓库 ID |
+| 首次发布失败        | 标签版本与 package.json 一致，标签提交已进入默认分支，Actions 已启用          |
+| 缺少更新密钥        | 普通项目使用 basic；已发行 updater 项目恢复原备份并配置 Secrets               |
+| 无法自动创建同步 PR | 下载 upstream-diff 手动审查，或由维护者授权开启相应仓库选项                   |
+| 客户端无法检查更新  | 检查更新地址、公钥和 Release 可见性，草稿或私有资产不能匿名更新               |
+| 服务连接失败        | 检查 HTTPS 证书、health 接口与来源白名单                                      |
+
+客户端回退通过安装经确认的旧版本完成；服务端迁移仍需按部署章节备份和恢复，客户端回退不会回退数据库。

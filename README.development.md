@@ -93,7 +93,7 @@ pnpm dev             # 同时启动前端 9527 与 API 8000；Ctrl+C 一起停�
 | `.env.testing`     | 测试库、Docker 测试端口和密钥          |
 | `.env.production`  | 生产地址、Docker 端口和密钥            |
 
-本地连接使用 `DB_HOST/PORT/DATABASE/USERNAME/PASSWORD`；Docker 内数据库地址和账号由 Compose 设置，使用 `DOCKER_DB_PASSWORD` 和 `MYSQL_ROOT_PASSWORD`。`DOCKER_HTTP_PORT` 控制容器对外端口，`APP_URL` 设置访问地址。`VITE_*` 属于前端公开配置，不能放数据库密码或服务端密钥，修改后需重新构建。
+执行迁移前，在 `.env.development` 中填写本机数据库连接；需要时先创建该数据库。本地连接使用 `DB_HOST/PORT/DATABASE/USERNAME/PASSWORD`；Docker 内数据库地址和账号由 Compose 设置，使用 `DOCKER_DB_PASSWORD` 和 `MYSQL_ROOT_PASSWORD`。`DOCKER_HTTP_PORT` 控制容器对外端口，`APP_URL` 设置浏览器实际访问的完整地址（包含端口），更换域名、IP 或端口后要同步修改并更新容器，否则登录来源校验会拒绝请求。`VITE_*` 属于前端公开配置，不能放数据库密码或服务端密钥，修改后需重新构建。
 
 认证配置位于对应模式的 env：`JWT_TTL` 为访问令牌分钟数（默认 15），`REFRESH_TTL` 为刷新会话分钟数（默认 10080），`JWT_ISSUER` 为固定签发方。`AUTH_ALLOWED_ORIGINS` 为逗号分隔的浏览器/桌面来源白名单；本地默认包含 Vite 地址，生产默认包含 `APP_URL` 和 Tauri 桌面来源，自定义白名单时需一并保留实际桌面来源。生产 Web 使用 HTTPS，并通过同站点 API 代理发送 Cookie。
 
@@ -377,3 +377,5 @@ Linux 正式更新清单分别提供 AppImage 与 deb 签名条目；deb 更新�
 | 服务连接失败        | 检查 HTTPS 证书、health 接口与来源白名单                                      |
 
 客户端回退通过安装经确认的旧版本完成；服务端迁移仍需按部署章节备份和恢复，客户端回退不会回退数据库。
+
+浏览器验收使用 `pnpm test:e2e`，从 `.env.testing` 读取 `DEV_FRONTEND_PORT` / `DEV_BACKEND_PORT`（默认 9531/8011）。测试会自行启动服务；端口已占用时停止，避免误连其他项目实例。需要并行实例时为测试 env 配置另一组空闲端口。

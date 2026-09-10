@@ -14,7 +14,9 @@ cd my-admin
 node scripts/docker.mjs up
 ```
 
-首次构建需要下载依赖。启动完成后打开 **http://localhost:8080**；部署在服务器上时，将 localhost 换成服务器地址。
+首次构建需要下载依赖。启动完成后打开 **http://localhost:8080**。
+
+部署到服务器或更换端口时，先执行 `node scripts/setup.mjs`，在 `.env.testing` 中把 `APP_URL` 改为浏览器实际访问的完整地址（例如 `http://服务器地址:8080`）；改端口还需同步 `DOCKER_HTTP_PORT`，再启动或更新。访问地址须与配置一致，否则登录会被来源校验拒绝。
 
 创建自己的管理员（邮箱可替换，密码按提示输入）：
 

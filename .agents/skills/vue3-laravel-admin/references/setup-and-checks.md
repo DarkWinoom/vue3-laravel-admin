@@ -37,7 +37,7 @@ node scripts/docker.mjs up
 docker compose --env-file .env.testing exec api php artisan admin:create admin@example.com
 ```
 
-默认页面 `http://localhost:8080`。`node scripts/docker.mjs update` 用当前工作区源码重建并迁移，`down` 停止服务且保留数据卷。不要为应用更新删除数据卷。
+默认页面 `http://localhost:8080`。使用其他域名、IP 或端口时，在对应 env 同步 `APP_URL` 为浏览器实际访问地址；端口同时修改 `DOCKER_HTTP_PORT`，然后启动或更新。`node scripts/docker.mjs update` 用当前工作区源码重建并迁移，`down` 停止服务且保留数据卷。不要为应用更新删除数据卷。
 
 生产使用 `node scripts/docker.mjs up production` / `update production`。先执行 `node scripts/setup.mjs`、填写 `.env.production` 的访问地址和部署设置，公开访问通过 HTTPS；保持已有 APP_KEY、JWT_SECRET 与数据库凭据。首次生产管理员命令改用 `.env.production`。没有真实目标环境时只完成本地可验证工作，不把本地构建写成生产部署成功。
 
@@ -55,4 +55,8 @@ docker compose --env-file .env.testing exec api php artisan admin:create admin@e
 
 `pnpm api:generate` / `pnpm api:check` 使用临时 SQLite 迁移库导出契约，无需外部 MySQL；数据库行为仍由 `pnpm test:mysql` 验证。
 
+新增默认权限或菜单后，核对初始化、菜单迁移和分页测试中的固定数量，按新增模块更新期望并保留原有保护断言；新库与已有库升级均需验证。
+
 错误/越权测试应证明当前功能被拒绝，而不是仅断言页面上没有按钮。只标记真正执行成功的检查；依赖、网络或目标平台不足时明确记录影响，不添加空测试来替代验证。
+
+浏览器验收使用 `pnpm test:e2e`，从 `.env.testing` 读取 `DEV_FRONTEND_PORT` / `DEV_BACKEND_PORT`（默认 9531/8011）。测试会自行启动服务；端口已占用时停止，避免误连其他项目实例。需要并行实例时为测试 env 配置另一组空闲端口。

@@ -67,3 +67,22 @@ test('user create edit and delete uses the real API and optimistic version', asy
   await page.getByRole('button', { name: '确认', exact: true }).click();
   await expect(row).toHaveCount(0);
 });
+
+test('long account names keep mobile header actions and profile access reachable', async ({ page }) => {
+  await login(page, 'browser-admin@example.test');
+  await page.goto('/profile');
+  const name = 'Administrator '.repeat(7).trim();
+  await page.getByPlaceholder('请输入用户名', { exact: true }).fill(name);
+  await page.getByRole('button', { name: '保存修改', exact: true }).click();
+  await expect(page.getByText('个人资料已保存', { exact: true })).toBeVisible();
+  for (const width of [360, 390, 768]) {
+    await page.setViewportSize({ width, height: 800 });
+    await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth)).toBe(width);
+    await page.getByRole('button', { name, exact: true }).click();
+    await expect(page.getByText('个人中心', { exact: true }).last()).toBeVisible();
+    await page.keyboard.press('Escape');
+  }
+  await page.getByPlaceholder('请输入用户名', { exact: true }).fill('Browser Admin');
+  await page.getByRole('button', { name: '保存修改', exact: true }).click();
+  await expect(page.getByText('个人资料已保存', { exact: true })).toBeVisible();
+});

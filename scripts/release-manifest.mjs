@@ -19,6 +19,12 @@ validateReleaseBuilds(builds, version, {
 for (const build of builds)
   for (const asset of build.assets)
     if (!existsSync(directory + '/' + asset)) throw new Error('Missing release asset: ' + asset);
+const listedAssets = new Set(builds.flatMap(build => build.assets));
+const stalePackages = readdirSync(directory).filter(
+  name => /\.(exe|msi|dmg|deb|AppImage|app\.tar\.gz)(\.sig)?$/.test(name) && !listedAssets.has(name)
+);
+if (stalePackages.length)
+  throw new Error('Unlisted release packages: ' + stalePackages.join(', ') + '. Use a clean artifact directory.');
 const signed = settings.releaseMode === 'updater';
 if (signed) {
   const platforms = releasePlatforms(builds, version, context.repository, context.server);

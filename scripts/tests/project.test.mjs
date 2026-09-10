@@ -202,6 +202,11 @@ test('fresh derived repository releases from a non-main branch without historica
     writeFileSync(path.join(directory, 'latest.json'), 'stale');
     run('release-manifest.mjs', [], github);
     assert.equal(existsSync(path.join(directory, 'latest.json')), false);
+    const stalePackage = path.join(directory, 'old-version.exe');
+    writeFileSync(stalePackage, 'old installer');
+    assert.throws(() => run('release-manifest.mjs', [], github), /Command failed/);
+    assert.equal(readFileSync(stalePackage, 'utf8'), 'old installer');
+    rmSync(stalePackage);
     assert.match(readFileSync(path.join(directory, 'release-notes.md'), 'utf8'), /Custom App 1.2.3/);
     builds[0].sha = 'wrong-source';
     save();

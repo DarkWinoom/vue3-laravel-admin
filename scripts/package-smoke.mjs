@@ -1,3 +1,5 @@
+import { appSettings } from './desktop-config.mjs';
+import { currentPackages, requireSinglePackage } from './package-files.mjs';
 import { nativeMetadata } from './native-metadata.mjs';
 import { spawn, spawnSync } from 'node:child_process';
 import { existsSync, readFileSync, mkdtempSync, realpathSync, readdirSync, rmSync, cpSync, mkdirSync } from 'node:fs';
@@ -7,6 +9,8 @@ import assert from 'node:assert/strict';
 import { root } from './env.mjs';
 
 const native = nativeMetadata();
+const { settings, version } = appSettings();
+const packageFiles = directory => currentPackages(files(directory), { ...settings, version });
 const temporaryRoot = realpathSync(os.tmpdir());
 const temporary = mkdtempSync(path.join(temporaryRoot, 'vue3-package-'));
 let app;
@@ -27,12 +31,12 @@ const install = path.join(temporary, 'installed');
 try {
   let binary;
   if (process.platform === 'win32') {
-    const installer = files(path.join(bundle, 'nsis')).find(p => p.endsWith('.exe'));
+    const installer = requireSinglePackage(packageFiles(path.join(bundle, 'nsis')), '.exe');
     assert.ok(installer);
     run(installer, ['/S', '/D=' + install]);
     binary = path.join(install, native.binary + '.exe');
   } else if (process.platform === 'darwin') {
-    const dmg = files(path.join(bundle, 'dmg')).find(p => p.endsWith('.dmg'));
+    const dmg = requireSinglePackage(packageFiles(path.join(bundle, 'dmg')), '.dmg');
     assert.ok(dmg);
     mkdirSync(mount);
     run('hdiutil', ['attach', dmg, '-nobrowse', '-readonly', '-mountpoint', mount]);
@@ -45,7 +49,7 @@ try {
     const executable = path.join(install, name, 'Contents/MacOS');
     binary = path.join(executable, readdirSync(executable)[0]);
   } else {
-    const deb = files(path.join(bundle, 'deb')).find(p => p.endsWith('.deb'));
+    const deb = requireSinglePackage(packageFiles(path.join(bundle, 'deb')), '.deb');
     assert.ok(deb);
     linuxPackage = spawnSync('dpkg-deb', ['-f', deb, 'Package'], { encoding: 'utf8' }).stdout.trim();
     assert.match(linuxPackage, /^[a-z0-9][a-z0-9+.-]+$/);

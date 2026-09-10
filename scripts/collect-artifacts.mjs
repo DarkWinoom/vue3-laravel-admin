@@ -4,6 +4,7 @@ import { execFileSync, spawnSync } from 'node:child_process';
 import path from 'node:path';
 import { appSettings } from './desktop-config.mjs';
 import { repositoryContext } from './repository.mjs';
+import { currentPackages } from './package-files.mjs';
 import { nativeMetadata } from './native-metadata.mjs';
 const { version, settings } = appSettings();
 const signed =
@@ -21,7 +22,7 @@ function files(dir) {
       )
     : [];
 }
-const source = files(path.join(native.target, 'release/bundle')).filter(
+const source = currentPackages(files(path.join(native.target, 'release/bundle')), { ...settings, version }).filter(
   p =>
     /\.(exe|msi|dmg|deb|AppImage|app\.tar\.gz)(\.sig)?$/.test(p) &&
     (signed || (!p.endsWith('.sig') && !p.endsWith('.app.tar.gz')))

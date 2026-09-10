@@ -84,7 +84,7 @@
     "@sa/uno-preset": "workspace:*",
     "@soybeanjs/eslint-config-vue": "^0.0.2",
     "@tauri-apps/cli": "^2.11.1",
-    "@types/node": "25.7.0",
+    "@types/node": "26.4.1",
     "@types/nprogress": "0.2.3",
     "@types/swagger-ui-dist": "3.30.6",
     "@typescript-eslint/parser": "8.59.3",

@@ -35,3 +35,5 @@ release.yml 只聚合完整平台产物并建立草稿；公开发布应在实�
 ## 依赖与上游
 
 Dependabot 为两个 pnpm workspace、Composer、Cargo、Actions 提 PR。upstream:check 对比 upstream.json 固定 SHA；上游工作流保存补丁并提出候选，不应用代码或推进基线。审查差异、选择性移植、解决冲突并验证后更新基线。保留本地模块、中文导航、SCSS 和用户定制样式。
+
+自动创建上游 PR 还需要仓库开启 GitHub 的 “Allow GitHub Actions to create and approve pull requests” 开关。这包含额外审批能力，改动前确认使用者已有授权；本项目工作流只创建草稿，不审批或合并，默认令牌权限仍保持只读。

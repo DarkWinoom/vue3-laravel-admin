@@ -259,6 +259,8 @@ pnpm upstream:check
 
 Linux 原生测试用 `xvfb-run -a node scripts/native-e2e.mjs`。测试应用使用独立的 `.e2e` 标识及 Test 名称；WebDriver 仅为测试 feature，Rust 拒绝把它编译进 release profile。不要分发这些调试二进制文件。
 
+自动创建上游草稿 PR 需要在仓库 Settings → Actions → General 开启 “Allow GitHub Actions to create and approve pull requests”。GitHub 将创建和审批权限合并在此开关中；现有工作流只创建草稿，不审批或合并。默认工作流权限保持只读，由具体工作流声明所需权限。修改这项仓库权限前应获得仓库维护者授权。
+
 Dependabot 分别为根 pnpm、前端 pnpm、Composer、Cargo 和 Actions 创建更新 PR。上游工作流每周及手动检测 `upstream.json` 中的 tauri/example SHA；存在变化时保存二进制差异补丁，并创建仅含候选 SHA 的草稿 PR。它不应用补丁，也不推进基线。先审查差异，在自己的分支选择性移植并处理冲突，通过项目检查后再更新基线；关闭的同 SHA 提案不会重复创建。
 
 ## 签名更新与草稿发布

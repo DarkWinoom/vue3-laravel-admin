@@ -17,7 +17,7 @@ function files(dir) {
     : [];
 }
 const source = files('frontend/src-tauri/target/release/bundle').filter(p =>
-  /\.(exe|msi|dmg|deb|AppImage|tar\.gz)(\.sig)?$/.test(p)
+  /\.(exe|msi|dmg|deb|AppImage|app\.tar\.gz)(\.sig)?$/.test(p)
 );
 if (!source.length) throw new Error('No desktop packages were produced');
 if (process.argv.includes('--signed') && platform === 'linux') {

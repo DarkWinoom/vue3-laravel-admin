@@ -35,7 +35,7 @@ jobs:
       - run: pnpm --dir frontend exec playwright install --with-deps chromium
       - run: pnpm test:e2e
       - run: pnpm build:web
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: failure()
         with:
           name: browser-test-report
@@ -111,13 +111,13 @@ jobs:
         if: runner.os != 'Linux'
         run: node scripts/package-smoke.mjs
       - run: node scripts/collect-artifacts.mjs
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: desktop-${{ matrix.name }}
           path: .release-artifacts/
           include-hidden-files: true
           if-no-files-found: error
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: failure()
         with:
           name: native-test-${{ matrix.name }}

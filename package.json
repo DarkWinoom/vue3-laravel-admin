@@ -46,7 +46,7 @@
     "project:version": "node scripts/project-version.mjs"
   },
   "devDependencies": {
-    "concurrently": "9.2.1",
+    "concurrently": "10.0.5",
     "prettier": "3.6.2",
     "simple-git-hooks": "2.13.1"
   },
